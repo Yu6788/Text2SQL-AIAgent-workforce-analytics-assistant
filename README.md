@@ -16,6 +16,10 @@ https://text2sql-aiagent-workforce-analytics-assistant-8phrvf5mmjdmxrb.streamlit
 
 Use `Live API` mode for the strongest Text-to-SQL behavior. Use `Offline Demo` for a cost-free deterministic path.
 
+## Preview
+
+![Workforce Analytics Assistant preview](assets/app-preview.png)
+
 ## Documentation
 
 Read these first:
