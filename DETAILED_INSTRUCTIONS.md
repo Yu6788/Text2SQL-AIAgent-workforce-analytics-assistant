@@ -205,7 +205,7 @@ Which organization has the highest active headcount?
 
 What to show:
 
-- Live API can generate a more specific aggregation query.
+- The assistant can generate a more specific aggregation query.
 - SQL joins `employees` and `organizations`.
 - The result is summarized as a concise answer.
 
@@ -235,7 +235,7 @@ Which business unit had the best 2026 H1 reviews?
 
 What to show:
 
-- Live API can infer that "best reviews" means ranking by review outcome.
+- The assistant treats "best reviews" as a business-unit ranking by average review outcome.
 - The query uses employee and organization context with talent reviews.
 
 ### Demo Part E: Guardrail Boundary
@@ -427,7 +427,9 @@ Good Offline Demo questions:
 
 ```text
 How many active employees are in each business unit?
+Which organization has the highest active headcount?
 What was the 2026 H1 talent review completion rate?
+Which business unit had the best 2026 H1 reviews?
 Which development program had the highest completion rate?
 Did Leadership Development completion correlate with later promotions?
 What percentage of active employees is in each business unit?

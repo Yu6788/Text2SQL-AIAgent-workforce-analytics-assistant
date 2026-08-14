@@ -14,12 +14,17 @@ Open the deployed Streamlit app:
 https://text2sql-aiagent-workforce-analytics-assistant-8phrvf5mmjdmxrb.streamlit.app/
 ```
 
-Deployment settings:
+Use `Live API` mode for the strongest Text-to-SQL behavior. Use `Offline Demo` for a cost-free deterministic path.
 
-- App entrypoint: `app.py`
-- Main demo mode: `Live API`
-- Cost-free fallback: `Offline Demo`
-- Local URL after launch: `http://localhost:8501`
+## Documentation
+
+Read these first:
+
+- `README.md`: project overview and quick start.
+- `DETAILED_INSTRUCTIONS.md`: product guide, demo script, and user exploration instructions.
+- `ENGINEERING_ARCHITECTURE.md`: engineering architecture for technical reviewers.
+
+Historical planning notes and phase specs are retained in `docs/archive/`. Some archived files reference the synthetic company name `Atlas Workforce Solutions`; the current product-facing name is `Workforce Analytics Assistant`.
 
 ## What It Demonstrates
 
@@ -30,20 +35,6 @@ Deployment settings:
 - Inspectable SQL and intermediate pipeline details
 - Current-session follow-up questions
 - Offline deterministic demo mode plus Live API mode
-
-For product usage, demo steps, and exploration instructions, see:
-
-```text
-DETAILED_INSTRUCTIONS.md
-```
-
-For a concise technical architecture overview, see:
-
-```text
-ENGINEERING_ARCHITECTURE.md
-```
-
-Some phase notes in this repository are retained as historical build documentation and may reference the synthetic company name `Atlas Workforce Solutions`. The current product-facing name is `Workforce Analytics Assistant`.
 
 ## Example Questions
 
@@ -187,36 +178,9 @@ Never commit `.env`.
 
 ## Streamlit Community Cloud Deployment
 
-1. Push this project to a GitHub repository.
-2. Go to Streamlit Community Cloud.
-3. Create a new app from the GitHub repository.
-4. Set the entrypoint to `app.py`.
-5. In Advanced settings, select Python 3.11 or 3.12 for best dependency compatibility.
-6. Add Live API credentials in the app's Secrets settings.
-7. Use the values from `streamlit_secrets.example.toml` as the template.
+Deploy from GitHub with `app.py` as the Streamlit entrypoint. Use Python 3.11 or 3.12, and add API credentials through Streamlit Secrets using `streamlit_secrets.example.toml` as the template.
 
-Streamlit root-level secrets are exposed as environment variables at runtime, so the app can read `LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_KEY`, and `LLM_BASE_URL`.
-
-## Deployment Files
-
-Important files for GitHub and Streamlit:
-
-```text
-app.py
-requirements.txt
-requirements-optional.txt
-config.yaml
-.streamlit/config.toml
-.env.example
-streamlit_secrets.example.toml
-data/atlas_workforce.duckdb
-data/generated/*.csv
-metadata/
-src/
-tests/
-```
-
-The synthetic data files are intentionally included so the deployed app can start without running data-generation scripts.
+The synthetic DuckDB database, generated CSVs, and metadata are intentionally included so the app can start without running data-generation scripts at deploy time.
 
 ## Repository Layout
 
@@ -226,6 +190,7 @@ The synthetic data files are intentionally included so the deployed app can star
 |-- config.yaml
 |-- requirements.txt
 |-- data/
+|-- docs/archive/
 |-- metadata/
 |-- evaluation/
 |-- scripts/
