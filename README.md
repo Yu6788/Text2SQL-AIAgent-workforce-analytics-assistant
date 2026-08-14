@@ -29,6 +29,12 @@ https://text2sql-aiagent-workforce-analytics-assistant-8phrvf5mmjdmxrb.streamlit
 - Current-session follow-up questions
 - Offline deterministic demo mode plus Live API mode
 
+For a full walkthrough, technical explanation, and exploration checklist, see:
+
+```text
+DETAILED_INSTRUCTIONS.md
+```
+
 ## Example Questions
 
 These questions are designed for the main Streamlit UI:
