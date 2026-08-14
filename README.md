@@ -25,6 +25,7 @@ Use `Live API` mode for the strongest Text-to-SQL behavior. Use `Offline Demo` f
 Read these first:
 
 - `README.md`: project overview and quick start.
+- `BUSINESS_NARRATIVE.md`: business problem, product value, stakeholder use cases, and decision-support framing.
 - `DETAILED_INSTRUCTIONS.md`: product guide, demo script, and user exploration instructions.
 - `ENGINEERING_ARCHITECTURE.md`: engineering architecture for technical reviewers.
 - `DATA_GUIDE.md`: dataset explanation, table relationships, metric definitions, and question families.
@@ -195,6 +196,7 @@ The synthetic DuckDB database, generated CSVs, and metadata are intentionally in
 |-- app.py
 |-- config.yaml
 |-- requirements.txt
+|-- BUSINESS_NARRATIVE.md
 |-- DATA_GUIDE.md
 |-- EVALUATION.md
 |-- data/
