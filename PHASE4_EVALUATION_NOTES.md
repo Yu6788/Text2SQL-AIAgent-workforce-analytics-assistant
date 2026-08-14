@@ -86,5 +86,5 @@ a more stable provider/key.
 
 ```text
 python3 -m pytest -q
-38 passed
+50 passed, 1 warning
 ```

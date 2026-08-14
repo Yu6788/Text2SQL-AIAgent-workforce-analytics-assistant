@@ -48,6 +48,33 @@ def test_stub_summary_for_program_completion_rate_is_natural() -> None:
     assert summary.answer == "Leadership Development 01 had the highest program completion rate at 87.5%."
 
 
+def test_stub_summary_for_largest_organization_is_natural() -> None:
+    summary = StubLLMService().summarize(
+        question="Which organization has the highest active headcount?",
+        sql="SELECT ...",
+        columns=["organization_name", "business_unit", "active_headcount"],
+        rows=[("Operations Org 09", "Operations", 115)],
+        truncated=False,
+    )
+
+    assert summary.answer == "Operations Org 09 in Operations has the highest active headcount with 115 employees."
+
+
+def test_stub_summary_for_best_h1_reviews_is_natural() -> None:
+    summary = StubLLMService().summarize(
+        question="Which business unit had the best 2026 H1 reviews?",
+        sql="SELECT ...",
+        columns=["business_unit", "average_performance_rating", "completed_reviews"],
+        rows=[("Sales", 3.71, 535)],
+        truncated=False,
+    )
+
+    assert (
+        summary.answer
+        == "Sales had the best 2026 H1 reviews, with an average performance rating of 3.71 across 535 completed reviews."
+    )
+
+
 def test_stub_follow_up_resolver_filters_business_unit() -> None:
     result = StubLLMService().resolve_follow_up(
         question="What about only Technology?",

@@ -352,7 +352,7 @@ Coverage includes:
 Current status:
 
 ```text
-44 passed, 1 warning
+50 passed, 1 warning
 ```
 
 The stub path is important because it makes most logic testable without relying on external API availability.

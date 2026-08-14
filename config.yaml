@@ -1,5 +1,5 @@
 project:
-  name: Atlas Workforce Text-to-SQL
+  name: Workforce Analytics Assistant
   environment: development
 
 llm:

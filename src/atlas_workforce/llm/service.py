@@ -213,6 +213,24 @@ class StubLLMService:
                 """.strip(),
                 tables_used=["employees", "organizations"],
             )
+        if "organization" in lowered and "highest active headcount" in lowered:
+            return SQLGenerationResult(
+                sql="""
+                SELECT
+                    o.organization_name,
+                    o.business_unit,
+                    COUNT(*) AS active_headcount
+                FROM employees e
+                JOIN organizations o
+                    ON e.organization_id = o.organization_id
+                WHERE e.employment_status = 'Active'
+                  AND o.organization_status = 'Active'
+                GROUP BY o.organization_name, o.business_unit
+                ORDER BY active_headcount DESC
+                LIMIT 1
+                """.strip(),
+                tables_used=["employees", "organizations"],
+            )
         if "2026 h1" in lowered and "review completion" in lowered:
             return SQLGenerationResult(
                 sql="""
@@ -226,6 +244,31 @@ class StubLLMService:
                 WHERE review_cycle = '2026_H1'
                 """.strip(),
                 tables_used=["talent_reviews"],
+            )
+        if (
+            "business unit" in lowered
+            and "2026 h1" in lowered
+            and ("best" in lowered or "highest" in lowered)
+            and ("review" in lowered or "reviews" in lowered or "performance" in lowered)
+        ):
+            return SQLGenerationResult(
+                sql="""
+                SELECT
+                    o.business_unit,
+                    ROUND(AVG(tr.performance_rating), 2) AS average_performance_rating,
+                    COUNT(*) AS completed_reviews
+                FROM talent_reviews tr
+                JOIN employees e
+                    ON tr.employee_id = e.employee_id
+                JOIN organizations o
+                    ON e.organization_id = o.organization_id
+                WHERE tr.review_cycle = '2026_H1'
+                  AND tr.review_status = 'Completed'
+                GROUP BY o.business_unit
+                ORDER BY average_performance_rating DESC, completed_reviews DESC
+                LIMIT 1
+                """.strip(),
+                tables_used=["talent_reviews", "employees", "organizations"],
             )
         if "development program" in lowered and "completion rate" in lowered:
             return SQLGenerationResult(
@@ -363,6 +406,18 @@ class StubLLMService:
                 )
             return SummaryResult(answer=f"{leader[0]} has {leader[1]:,} active employees.{suffix}")
 
+        if {"organization_name", "business_unit", "active_headcount"}.issubset(set(lowered_columns)):
+            row = rows[0]
+            organization = row[lowered_columns.index("organization_name")]
+            business_unit = row[lowered_columns.index("business_unit")]
+            headcount = row[lowered_columns.index("active_headcount")]
+            return SummaryResult(
+                answer=(
+                    f"{organization} in {business_unit} has the highest active headcount "
+                    f"with {int(headcount):,} employees.{suffix}"
+                )
+            )
+
         if "review_completion_rate_pct" in lowered_columns:
             value = rows[0][lowered_columns.index("review_completion_rate_pct")]
             return SummaryResult(answer=f"The talent review completion rate was {float(value):.1f}%.{suffix}")
@@ -377,6 +432,18 @@ class StubLLMService:
             rate = row[lowered_columns.index("completion_rate_pct")]
             return SummaryResult(
                 answer=f"{program} had the highest program completion rate at {float(rate):.1f}%.{suffix}"
+            )
+
+        if {"business_unit", "average_performance_rating", "completed_reviews"}.issubset(set(lowered_columns)):
+            row = rows[0]
+            business_unit = row[lowered_columns.index("business_unit")]
+            rating = row[lowered_columns.index("average_performance_rating")]
+            reviews = row[lowered_columns.index("completed_reviews")]
+            return SummaryResult(
+                answer=(
+                    f"{business_unit} had the best 2026 H1 reviews, with an average performance "
+                    f"rating of {float(rating):.2f} across {int(reviews):,} completed reviews.{suffix}"
+                )
             )
 
         if {"cohort", "employees", "promoted_employees", "promotion_rate_pct"}.issubset(set(lowered_columns)):

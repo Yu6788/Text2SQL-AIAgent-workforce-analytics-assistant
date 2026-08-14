@@ -1,23 +1,25 @@
 # Workforce Analytics Assistant
 
+[![Tests](https://github.com/Yu6788/Text2SQL-AIAgent-workforce-analytics-assistant/actions/workflows/tests.yml/badge.svg)](https://github.com/Yu6788/Text2SQL-AIAgent-workforce-analytics-assistant/actions/workflows/tests.yml)
+
 A Streamlit-based Text-to-SQL agent for synthetic workforce analytics. The app lets a user ask workforce questions in natural language, inspect the generated SQL workflow, and receive a concise natural-language answer.
 
 All business data is synthetic. No real employee, company, salary, protected attribute, or PII data is used.
 
 ## Live Demo
 
-Deploy this app with Streamlit Community Cloud from this GitHub repository.
+Open the deployed Streamlit app:
+
+```text
+https://text2sql-aiagent-workforce-analytics-assistant-8phrvf5mmjdmxrb.streamlit.app/
+```
+
+Deployment settings:
 
 - App entrypoint: `app.py`
 - Main demo mode: `Live API`
 - Cost-free fallback: `Offline Demo`
 - Local URL after launch: `http://localhost:8501`
-
-After deployment, add the Streamlit app URL here:
-
-```text
-https://text2sql-aiagent-workforce-analytics-assistant-8phrvf5mmjdmxrb.streamlit.app/
-```
 
 ## What It Demonstrates
 
@@ -40,6 +42,8 @@ For a concise technical architecture overview, see:
 ```text
 ENGINEERING_ARCHITECTURE.md
 ```
+
+Some phase notes in this repository are retained as historical build documentation and may reference the synthetic company name `Atlas Workforce Solutions`. The current product-facing name is `Workforce Analytics Assistant`.
 
 ## Example Questions
 
@@ -241,7 +245,7 @@ The synthetic data files are intentionally included so the deployed app can star
 Current local test status:
 
 ```text
-44 passed, 1 warning
+50 passed, 1 warning
 ```
 
 Stub evaluation is intentionally limited because Offline Demo uses deterministic SQL rules. Live API mode is broader and has been smoke-tested on the main example questions.

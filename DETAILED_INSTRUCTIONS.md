@@ -87,7 +87,7 @@ The repository includes:
 Current local test status:
 
 ```text
-44 passed, 1 warning
+50 passed, 1 warning
 ```
 
 ## 3. How To Use The Live App

@@ -111,6 +111,30 @@ def test_stub_workflow_success() -> None:
     assert "business_unit" in final_state["db_result"]["columns"]
 
 
+@pytest.mark.parametrize(
+    "question",
+    [
+        "How many active employees are in each business unit?",
+        "Which organization has the highest active headcount?",
+        "What was the 2026 H1 talent review completion rate?",
+        "Which business unit had the best 2026 H1 reviews?",
+    ],
+)
+def test_main_streamlit_examples_work_in_offline_demo(question: str) -> None:
+    settings = load_settings(ROOT / "config.yaml")
+    final_state = run_question(
+        settings,
+        ROOT,
+        question,
+        RuntimeOptions(llm_provider="stub", embedding_backend="hashing", reranker_backend="lexical"),
+    )
+
+    assert final_state["status"] == "SUCCESS"
+    assert final_state["final_answer"]
+    assert final_state["validation_result"]["is_valid"]
+    assert final_state["db_result"]["row_count"] > 0
+
+
 def test_stub_workflow_guardrail_rejection() -> None:
     settings = load_settings(ROOT / "config.yaml")
     services = WorkflowServices(

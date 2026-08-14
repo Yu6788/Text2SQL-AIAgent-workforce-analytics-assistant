@@ -774,7 +774,10 @@ def render_immediate_answer(state: dict) -> None:
     if state.get("db_error"):
         st.error(str(state["db_error"])[:1200])
         return
-    st.info("No final answer was produced for this run.")
+    st.info(
+        "I could not produce a final answer for this question. Try Live API mode, "
+        "rephrase the question, or open workflow details to inspect where the run stopped."
+    )
 
 
 def render_chat_bubble(role: str, message: str, note: str = "") -> None:
@@ -801,7 +804,10 @@ def state_answer_text(state: dict) -> str:
         return state.get("guardrail_reason", "This question is outside the database scope.")
     if state.get("db_error"):
         return str(state["db_error"])[:1200]
-    return "No final answer was produced for this run."
+    return (
+        "I could not produce a final answer for this question. Try Live API mode, "
+        "rephrase the question, or open workflow details to inspect where the run stopped."
+    )
 
 
 def render_agent_details(state: dict) -> None:
