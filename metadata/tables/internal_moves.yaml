@@ -1,0 +1,48 @@
+table_name: internal_moves
+description: >
+  Employee internal mobility events including promotions, lateral transfers,
+  organization transfers, and role changes.
+grain: One row represents one internal employee move event.
+primary_key:
+  - move_id
+foreign_keys:
+  employee_id:
+    references: employees.employee_id
+  from_organization_id:
+    references: organizations.organization_id
+  to_organization_id:
+    references: organizations.organization_id
+columns:
+  - name: move_id
+    type: VARCHAR
+    description: Unique internal move identifier.
+  - name: employee_id
+    type: VARCHAR
+    description: Employee associated with the move.
+  - name: move_date
+    type: DATE
+    description: Date the internal move occurred.
+  - name: move_type
+    type: VARCHAR
+    description: Promotion, Lateral Transfer, Organization Transfer, or Role Change.
+  - name: from_organization_id
+    type: VARCHAR
+    description: Organization before the move.
+  - name: to_organization_id
+    type: VARCHAR
+    description: Organization after the move.
+  - name: from_job_level
+    type: VARCHAR
+    description: Job level before the move.
+  - name: to_job_level
+    type: VARCHAR
+    description: Job level after the move.
+sample_rows:
+  - move_id: M000001
+    employee_id: E00001
+    move_date: 2026-04-10
+    move_type: Promotion
+    from_organization_id: ORG001
+    to_organization_id: ORG001
+    from_job_level: L4
+    to_job_level: L5

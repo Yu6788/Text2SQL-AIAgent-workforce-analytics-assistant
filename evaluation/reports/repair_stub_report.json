@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "total_cases": 2,
+    "average_table_recall_at_4": 1.0,
+    "all_required_tables_recall_at_4": 1.0,
+    "execution_success_rate": 1.0,
+    "execution_accuracy": 1.0,
+    "retry_recovery_rate": 1.0,
+    "cases_with_sql_retries": 2,
+    "median_latency_ms": 53.05337499999996
+  },
+  "cases": [
+    {
+      "id": "RPR001",
+      "question": "Repair demo unsafe: how many active employees are there?",
+      "difficulty": "repair",
+      "category": "validator_unauthorized_table",
+      "expected_tables": [
+        "employees"
+      ],
+      "retrieved_tables": [
+        "employees",
+        "organizations",
+        "employee_programs",
+        "internal_moves"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "SUCCESS",
+      "generated_sql": "SELECT COUNT(*) AS active_employees FROM employees WHERE employment_status = 'Active'",
+      "validated_tables": [
+        "employees"
+      ],
+      "execution_success": true,
+      "sql_retry_count": 1,
+      "retry_history": [
+        "Unauthorized table(s): salaries"
+      ],
+      "recovered_by_repair": true,
+      "result_equivalent": true,
+      "gold_error": null,
+      "generated_error": null,
+      "latency_ms": 53.05337499999996
+    },
+    {
+      "id": "RPR002",
+      "question": "Repair demo bad column: count employees by employment status.",
+      "difficulty": "repair",
+      "category": "database_binder_error",
+      "expected_tables": [
+        "employees"
+      ],
+      "retrieved_tables": [
+        "employees",
+        "organizations",
+        "employee_programs",
+        "talent_reviews"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "SUCCESS",
+      "generated_sql": "SELECT employment_status, COUNT(*) AS employees FROM employees GROUP BY employment_status ORDER BY employment_status",
+      "validated_tables": [
+        "employees"
+      ],
+      "execution_success": true,
+      "sql_retry_count": 1,
+      "retry_history": [
+        "Binder Error: Referenced column \"employee_status\" not found in FROM clause!\nCandidate bindings: \"employment_status\", \"employee_id\", \"hire_date\", \"termination_date\", \"location\"\n\nLINE 1: ...oyee_status, COUNT(*) AS employees FROM employees GROUP BY employee_status) AS result LIMIT 201\n                                                                      ^"
+      ],
+      "recovered_by_repair": true,
+      "result_equivalent": true,
+      "gold_error": null,
+      "generated_error": null,
+      "latency_ms": 36.43383300000003
+    }
+  ]
+}

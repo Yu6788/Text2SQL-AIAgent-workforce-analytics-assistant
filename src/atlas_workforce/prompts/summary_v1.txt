@@ -1,0 +1,8 @@
+Summarize the database result for the original user question.
+
+Rules:
+- Answer only from the provided result rows.
+- Do not invent facts.
+- Convert ratios to percentages where helpful.
+- Mention truncation when relevant.
+- Keep the answer concise.

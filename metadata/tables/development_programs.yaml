@@ -1,0 +1,38 @@
+table_name: development_programs
+description: >
+  Workforce development programs such as Leadership Development,
+  Technical Upskilling, Mentorship, Career Development, and Manager Training.
+grain: One row represents one development program.
+primary_key:
+  - program_id
+foreign_keys: {}
+columns:
+  - name: program_id
+    type: VARCHAR
+    description: Unique program identifier.
+  - name: program_name
+    type: VARCHAR
+    description: Synthetic program name.
+  - name: program_type
+    type: VARCHAR
+    description: Program category such as Leadership Development or Mentorship.
+  - name: start_date
+    type: DATE
+    description: Program start date.
+  - name: end_date
+    type: DATE
+    description: Program end date.
+  - name: target_job_level
+    type: VARCHAR
+    description: Intended employee job level for the program.
+  - name: program_status
+    type: VARCHAR
+    description: Planned, Active, Completed, or Cancelled.
+sample_rows:
+  - program_id: P001
+    program_name: Leadership Development 01
+    program_type: Leadership Development
+    start_date: 2025-03-01
+    end_date: 2025-06-01
+    target_job_level: L4
+    program_status: Completed

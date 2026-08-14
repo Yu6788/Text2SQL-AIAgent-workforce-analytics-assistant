@@ -1,0 +1,51 @@
+table_name: employees
+description: >
+  Synthetic employee records without names, emails, demographics, or other
+  PII. Supports headcount, hierarchy, job level, location, and organization
+  analysis.
+grain: One row represents one employee.
+primary_key:
+  - employee_id
+foreign_keys:
+  organization_id:
+    references: organizations.organization_id
+  manager_id:
+    references: employees.employee_id
+columns:
+  - name: employee_id
+    type: VARCHAR
+    description: Unique synthetic employee identifier.
+  - name: hire_date
+    type: DATE
+    description: Employee hire date.
+  - name: termination_date
+    type: DATE
+    description: Employee termination date, null when not terminated.
+  - name: employment_status
+    type: VARCHAR
+    description: Active, Terminated, or Leave.
+  - name: job_level
+    type: VARCHAR
+    description: Job level from L2 through L7.
+  - name: job_family
+    type: VARCHAR
+    description: Functional job family such as Data, Product, Finance, or HR.
+  - name: location
+    type: VARCHAR
+    description: Employee work region.
+  - name: manager_id
+    type: VARCHAR
+    description: Employee identifier for the manager; nullable for senior employees.
+  - name: organization_id
+    type: VARCHAR
+    description: Current organization assignment.
+sample_rows:
+  - employee_id: E00001
+    hire_date: 2022-04-12
+    termination_date:
+    employment_status: Active
+    job_level: L4
+    job_family: Data
+    location: North America
+    manager_id: E00100
+    organization_id: ORG001

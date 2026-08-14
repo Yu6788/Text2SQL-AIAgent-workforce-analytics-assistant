@@ -1,0 +1,42 @@
+table_name: employee_programs
+description: >
+  Many-to-many bridge between employees and development programs, including
+  enrollment status, completion date, and completion score.
+grain: One row represents one employee enrollment in one program.
+primary_key:
+  - employee_program_id
+foreign_keys:
+  employee_id:
+    references: employees.employee_id
+  program_id:
+    references: development_programs.program_id
+columns:
+  - name: employee_program_id
+    type: VARCHAR
+    description: Unique employee-program enrollment identifier.
+  - name: employee_id
+    type: VARCHAR
+    description: Employee enrolled in the program.
+  - name: program_id
+    type: VARCHAR
+    description: Development program identifier.
+  - name: enrollment_date
+    type: DATE
+    description: Date the employee enrolled.
+  - name: completion_date
+    type: DATE
+    description: Date the employee completed the program; null if not completed.
+  - name: participation_status
+    type: VARCHAR
+    description: Enrolled, In Progress, Completed, or Withdrawn.
+  - name: completion_score
+    type: DOUBLE
+    description: Synthetic completion score, null for incomplete enrollments.
+sample_rows:
+  - employee_program_id: EP000001
+    employee_id: E00001
+    program_id: P001
+    enrollment_date: 2025-03-10
+    completion_date: 2025-05-28
+    participation_status: Completed
+    completion_score: 88.5

@@ -1,0 +1,12 @@
+Generate one DuckDB SQL query for the user question.
+
+Rules:
+- Use only supplied tables and columns.
+- Do not invent schema.
+- Use documented primary and foreign key relationships.
+- Generate exactly one read-only query.
+- SELECT and WITH ... SELECT are allowed.
+- Do not mutate data.
+- Do not access external files, URLs, extensions, or table functions.
+- Do not use CROSS JOIN.
+- Return structured output only.

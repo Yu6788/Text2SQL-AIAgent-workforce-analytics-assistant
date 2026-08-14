@@ -1,0 +1,5 @@
+Repair the previous DuckDB SQL query.
+
+Use the original user question, business definitions, schema context, previous
+SQL, and validator or database error. Return one corrected read-only DuckDB SQL
+query as structured output only.

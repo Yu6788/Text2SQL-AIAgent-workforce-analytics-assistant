@@ -1,0 +1,424 @@
+[
+  {
+    "table_name": "development_programs",
+    "text": "Table: development_programs\nDescription: Workforce development programs such as Leadership Development, Technical Upskilling, Mentorship, Career Development, and Manager Training.\nGrain: One row represents one development program.\nPrimary key: program_id\nForeign keys:\nNone\nColumns:\n- program_id (VARCHAR): Unique program identifier.\n- program_name (VARCHAR): Synthetic program name.\n- program_type (VARCHAR): Program category such as Leadership Development or Mentorship.\n- start_date (DATE): Program start date.\n- end_date (DATE): Program end date.\n- target_job_level (VARCHAR): Intended employee job level for the program.\n- program_status (VARCHAR): Planned, Active, Completed, or Cancelled.\nSample rows:\n- program_id=P001, program_name=Leadership Development 01, program_type=Leadership Development, start_date=2025-03-01, end_date=2025-06-01, target_job_level=L4, program_status=Completed",
+    "metadata": {
+      "table_name": "development_programs",
+      "description": "Workforce development programs such as Leadership Development, Technical Upskilling, Mentorship, Career Development, and Manager Training.\n",
+      "grain": "One row represents one development program.",
+      "primary_key": [
+        "program_id"
+      ],
+      "foreign_keys": {},
+      "columns": [
+        {
+          "name": "program_id",
+          "type": "VARCHAR",
+          "description": "Unique program identifier."
+        },
+        {
+          "name": "program_name",
+          "type": "VARCHAR",
+          "description": "Synthetic program name."
+        },
+        {
+          "name": "program_type",
+          "type": "VARCHAR",
+          "description": "Program category such as Leadership Development or Mentorship."
+        },
+        {
+          "name": "start_date",
+          "type": "DATE",
+          "description": "Program start date."
+        },
+        {
+          "name": "end_date",
+          "type": "DATE",
+          "description": "Program end date."
+        },
+        {
+          "name": "target_job_level",
+          "type": "VARCHAR",
+          "description": "Intended employee job level for the program."
+        },
+        {
+          "name": "program_status",
+          "type": "VARCHAR",
+          "description": "Planned, Active, Completed, or Cancelled."
+        }
+      ],
+      "sample_rows": [
+        {
+          "program_id": "P001",
+          "program_name": "Leadership Development 01",
+          "program_type": "Leadership Development",
+          "start_date": "2025-03-01",
+          "end_date": "2025-06-01",
+          "target_job_level": "L4",
+          "program_status": "Completed"
+        }
+      ]
+    }
+  },
+  {
+    "table_name": "employee_programs",
+    "text": "Table: employee_programs\nDescription: Many-to-many bridge between employees and development programs, including enrollment status, completion date, and completion score.\nGrain: One row represents one employee enrollment in one program.\nPrimary key: employee_program_id\nForeign keys:\n- employee_id -> employees.employee_id\n- program_id -> development_programs.program_id\nColumns:\n- employee_program_id (VARCHAR): Unique employee-program enrollment identifier.\n- employee_id (VARCHAR): Employee enrolled in the program.\n- program_id (VARCHAR): Development program identifier.\n- enrollment_date (DATE): Date the employee enrolled.\n- completion_date (DATE): Date the employee completed the program; null if not completed.\n- participation_status (VARCHAR): Enrolled, In Progress, Completed, or Withdrawn.\n- completion_score (DOUBLE): Synthetic completion score, null for incomplete enrollments.\nSample rows:\n- employee_program_id=EP000001, employee_id=E00001, program_id=P001, enrollment_date=2025-03-10, completion_date=2025-05-28, participation_status=Completed, completion_score=88.5",
+    "metadata": {
+      "table_name": "employee_programs",
+      "description": "Many-to-many bridge between employees and development programs, including enrollment status, completion date, and completion score.\n",
+      "grain": "One row represents one employee enrollment in one program.",
+      "primary_key": [
+        "employee_program_id"
+      ],
+      "foreign_keys": {
+        "employee_id": {
+          "references": "employees.employee_id"
+        },
+        "program_id": {
+          "references": "development_programs.program_id"
+        }
+      },
+      "columns": [
+        {
+          "name": "employee_program_id",
+          "type": "VARCHAR",
+          "description": "Unique employee-program enrollment identifier."
+        },
+        {
+          "name": "employee_id",
+          "type": "VARCHAR",
+          "description": "Employee enrolled in the program."
+        },
+        {
+          "name": "program_id",
+          "type": "VARCHAR",
+          "description": "Development program identifier."
+        },
+        {
+          "name": "enrollment_date",
+          "type": "DATE",
+          "description": "Date the employee enrolled."
+        },
+        {
+          "name": "completion_date",
+          "type": "DATE",
+          "description": "Date the employee completed the program; null if not completed."
+        },
+        {
+          "name": "participation_status",
+          "type": "VARCHAR",
+          "description": "Enrolled, In Progress, Completed, or Withdrawn."
+        },
+        {
+          "name": "completion_score",
+          "type": "DOUBLE",
+          "description": "Synthetic completion score, null for incomplete enrollments."
+        }
+      ],
+      "sample_rows": [
+        {
+          "employee_program_id": "EP000001",
+          "employee_id": "E00001",
+          "program_id": "P001",
+          "enrollment_date": "2025-03-10",
+          "completion_date": "2025-05-28",
+          "participation_status": "Completed",
+          "completion_score": 88.5
+        }
+      ]
+    }
+  },
+  {
+    "table_name": "employees",
+    "text": "Table: employees\nDescription: Synthetic employee records without names, emails, demographics, or other PII. Supports headcount, hierarchy, job level, location, and organization analysis.\nGrain: One row represents one employee.\nPrimary key: employee_id\nForeign keys:\n- organization_id -> organizations.organization_id\n- manager_id -> employees.employee_id\nColumns:\n- employee_id (VARCHAR): Unique synthetic employee identifier.\n- hire_date (DATE): Employee hire date.\n- termination_date (DATE): Employee termination date, null when not terminated.\n- employment_status (VARCHAR): Active, Terminated, or Leave.\n- job_level (VARCHAR): Job level from L2 through L7.\n- job_family (VARCHAR): Functional job family such as Data, Product, Finance, or HR.\n- location (VARCHAR): Employee work region.\n- manager_id (VARCHAR): Employee identifier for the manager; nullable for senior employees.\n- organization_id (VARCHAR): Current organization assignment.\nSample rows:\n- employee_id=E00001, hire_date=2022-04-12, termination_date=None, employment_status=Active, job_level=L4, job_family=Data, location=North America, manager_id=E00100, organization_id=ORG001",
+    "metadata": {
+      "table_name": "employees",
+      "description": "Synthetic employee records without names, emails, demographics, or other PII. Supports headcount, hierarchy, job level, location, and organization analysis.\n",
+      "grain": "One row represents one employee.",
+      "primary_key": [
+        "employee_id"
+      ],
+      "foreign_keys": {
+        "organization_id": {
+          "references": "organizations.organization_id"
+        },
+        "manager_id": {
+          "references": "employees.employee_id"
+        }
+      },
+      "columns": [
+        {
+          "name": "employee_id",
+          "type": "VARCHAR",
+          "description": "Unique synthetic employee identifier."
+        },
+        {
+          "name": "hire_date",
+          "type": "DATE",
+          "description": "Employee hire date."
+        },
+        {
+          "name": "termination_date",
+          "type": "DATE",
+          "description": "Employee termination date, null when not terminated."
+        },
+        {
+          "name": "employment_status",
+          "type": "VARCHAR",
+          "description": "Active, Terminated, or Leave."
+        },
+        {
+          "name": "job_level",
+          "type": "VARCHAR",
+          "description": "Job level from L2 through L7."
+        },
+        {
+          "name": "job_family",
+          "type": "VARCHAR",
+          "description": "Functional job family such as Data, Product, Finance, or HR."
+        },
+        {
+          "name": "location",
+          "type": "VARCHAR",
+          "description": "Employee work region."
+        },
+        {
+          "name": "manager_id",
+          "type": "VARCHAR",
+          "description": "Employee identifier for the manager; nullable for senior employees."
+        },
+        {
+          "name": "organization_id",
+          "type": "VARCHAR",
+          "description": "Current organization assignment."
+        }
+      ],
+      "sample_rows": [
+        {
+          "employee_id": "E00001",
+          "hire_date": "2022-04-12",
+          "termination_date": null,
+          "employment_status": "Active",
+          "job_level": "L4",
+          "job_family": "Data",
+          "location": "North America",
+          "manager_id": "E00100",
+          "organization_id": "ORG001"
+        }
+      ]
+    }
+  },
+  {
+    "table_name": "internal_moves",
+    "text": "Table: internal_moves\nDescription: Employee internal mobility events including promotions, lateral transfers, organization transfers, and role changes.\nGrain: One row represents one internal employee move event.\nPrimary key: move_id\nForeign keys:\n- employee_id -> employees.employee_id\n- from_organization_id -> organizations.organization_id\n- to_organization_id -> organizations.organization_id\nColumns:\n- move_id (VARCHAR): Unique internal move identifier.\n- employee_id (VARCHAR): Employee associated with the move.\n- move_date (DATE): Date the internal move occurred.\n- move_type (VARCHAR): Promotion, Lateral Transfer, Organization Transfer, or Role Change.\n- from_organization_id (VARCHAR): Organization before the move.\n- to_organization_id (VARCHAR): Organization after the move.\n- from_job_level (VARCHAR): Job level before the move.\n- to_job_level (VARCHAR): Job level after the move.\nSample rows:\n- move_id=M000001, employee_id=E00001, move_date=2026-04-10, move_type=Promotion, from_organization_id=ORG001, to_organization_id=ORG001, from_job_level=L4, to_job_level=L5",
+    "metadata": {
+      "table_name": "internal_moves",
+      "description": "Employee internal mobility events including promotions, lateral transfers, organization transfers, and role changes.\n",
+      "grain": "One row represents one internal employee move event.",
+      "primary_key": [
+        "move_id"
+      ],
+      "foreign_keys": {
+        "employee_id": {
+          "references": "employees.employee_id"
+        },
+        "from_organization_id": {
+          "references": "organizations.organization_id"
+        },
+        "to_organization_id": {
+          "references": "organizations.organization_id"
+        }
+      },
+      "columns": [
+        {
+          "name": "move_id",
+          "type": "VARCHAR",
+          "description": "Unique internal move identifier."
+        },
+        {
+          "name": "employee_id",
+          "type": "VARCHAR",
+          "description": "Employee associated with the move."
+        },
+        {
+          "name": "move_date",
+          "type": "DATE",
+          "description": "Date the internal move occurred."
+        },
+        {
+          "name": "move_type",
+          "type": "VARCHAR",
+          "description": "Promotion, Lateral Transfer, Organization Transfer, or Role Change."
+        },
+        {
+          "name": "from_organization_id",
+          "type": "VARCHAR",
+          "description": "Organization before the move."
+        },
+        {
+          "name": "to_organization_id",
+          "type": "VARCHAR",
+          "description": "Organization after the move."
+        },
+        {
+          "name": "from_job_level",
+          "type": "VARCHAR",
+          "description": "Job level before the move."
+        },
+        {
+          "name": "to_job_level",
+          "type": "VARCHAR",
+          "description": "Job level after the move."
+        }
+      ],
+      "sample_rows": [
+        {
+          "move_id": "M000001",
+          "employee_id": "E00001",
+          "move_date": "2026-04-10",
+          "move_type": "Promotion",
+          "from_organization_id": "ORG001",
+          "to_organization_id": "ORG001",
+          "from_job_level": "L4",
+          "to_job_level": "L5"
+        }
+      ]
+    }
+  },
+  {
+    "table_name": "organizations",
+    "text": "Table: organizations\nDescription: Organizational units at Atlas Workforce Solutions, including business unit, region, leader, creation date, and active/inactive status.\nGrain: One row represents one organization.\nPrimary key: organization_id\nForeign keys:\n- org_leader_id -> employees.employee_id\nColumns:\n- organization_id (VARCHAR): Unique organization identifier.\n- organization_name (VARCHAR): Human-readable synthetic organization name.\n- business_unit (VARCHAR): Business unit such as Technology, Operations, Sales, or People.\n- region (VARCHAR): Region such as North America, Europe, Asia Pacific, or Latin America.\n- org_leader_id (VARCHAR): Employee identifier for the organization leader.\n- created_date (DATE): Date the organization was created.\n- organization_status (VARCHAR): Active or Inactive organization status.\nSample rows:\n- organization_id=ORG001, organization_name=Technology Org 01, business_unit=Technology, region=North America, org_leader_id=E00042, created_date=2020-01-15, organization_status=Active",
+    "metadata": {
+      "table_name": "organizations",
+      "description": "Organizational units at Atlas Workforce Solutions, including business unit, region, leader, creation date, and active/inactive status.\n",
+      "grain": "One row represents one organization.",
+      "primary_key": [
+        "organization_id"
+      ],
+      "foreign_keys": {
+        "org_leader_id": {
+          "references": "employees.employee_id"
+        }
+      },
+      "columns": [
+        {
+          "name": "organization_id",
+          "type": "VARCHAR",
+          "description": "Unique organization identifier."
+        },
+        {
+          "name": "organization_name",
+          "type": "VARCHAR",
+          "description": "Human-readable synthetic organization name."
+        },
+        {
+          "name": "business_unit",
+          "type": "VARCHAR",
+          "description": "Business unit such as Technology, Operations, Sales, or People."
+        },
+        {
+          "name": "region",
+          "type": "VARCHAR",
+          "description": "Region such as North America, Europe, Asia Pacific, or Latin America."
+        },
+        {
+          "name": "org_leader_id",
+          "type": "VARCHAR",
+          "description": "Employee identifier for the organization leader."
+        },
+        {
+          "name": "created_date",
+          "type": "DATE",
+          "description": "Date the organization was created."
+        },
+        {
+          "name": "organization_status",
+          "type": "VARCHAR",
+          "description": "Active or Inactive organization status."
+        }
+      ],
+      "sample_rows": [
+        {
+          "organization_id": "ORG001",
+          "organization_name": "Technology Org 01",
+          "business_unit": "Technology",
+          "region": "North America",
+          "org_leader_id": "E00042",
+          "created_date": "2020-01-15",
+          "organization_status": "Active"
+        }
+      ]
+    }
+  },
+  {
+    "table_name": "talent_reviews",
+    "text": "Table: talent_reviews\nDescription: Employee talent and performance review records for H1 and H2 review cycles from 2024 through 2026.\nGrain: One row represents one employee review in one review cycle.\nPrimary key: review_id\nForeign keys:\n- employee_id -> employees.employee_id\nColumns:\n- review_id (VARCHAR): Unique review identifier.\n- employee_id (VARCHAR): Employee receiving the review.\n- review_cycle (VARCHAR): Review cycle such as 2024_H1 or 2026_H2.\n- review_date (DATE): Date associated with the review cycle.\n- performance_rating (INTEGER): Performance rating from 1 through 5.\n- potential_rating (INTEGER): Potential rating from 1 through 5.\n- promotion_recommended (BOOLEAN): Whether the review recommended the employee for promotion.\n- review_status (VARCHAR): Completed, Pending, or Cancelled.\nSample rows:\n- review_id=R000001, employee_id=E00001, review_cycle=2026_H1, review_date=2026-06-15, performance_rating=4, potential_rating=4, promotion_recommended=True, review_status=Completed",
+    "metadata": {
+      "table_name": "talent_reviews",
+      "description": "Employee talent and performance review records for H1 and H2 review cycles from 2024 through 2026.\n",
+      "grain": "One row represents one employee review in one review cycle.",
+      "primary_key": [
+        "review_id"
+      ],
+      "foreign_keys": {
+        "employee_id": {
+          "references": "employees.employee_id"
+        }
+      },
+      "columns": [
+        {
+          "name": "review_id",
+          "type": "VARCHAR",
+          "description": "Unique review identifier."
+        },
+        {
+          "name": "employee_id",
+          "type": "VARCHAR",
+          "description": "Employee receiving the review."
+        },
+        {
+          "name": "review_cycle",
+          "type": "VARCHAR",
+          "description": "Review cycle such as 2024_H1 or 2026_H2."
+        },
+        {
+          "name": "review_date",
+          "type": "DATE",
+          "description": "Date associated with the review cycle."
+        },
+        {
+          "name": "performance_rating",
+          "type": "INTEGER",
+          "description": "Performance rating from 1 through 5."
+        },
+        {
+          "name": "potential_rating",
+          "type": "INTEGER",
+          "description": "Potential rating from 1 through 5."
+        },
+        {
+          "name": "promotion_recommended",
+          "type": "BOOLEAN",
+          "description": "Whether the review recommended the employee for promotion."
+        },
+        {
+          "name": "review_status",
+          "type": "VARCHAR",
+          "description": "Completed, Pending, or Cancelled."
+        }
+      ],
+      "sample_rows": [
+        {
+          "review_id": "R000001",
+          "employee_id": "E00001",
+          "review_cycle": "2026_H1",
+          "review_date": "2026-06-15",
+          "performance_rating": 4,
+          "potential_rating": 4,
+          "promotion_recommended": true,
+          "review_status": "Completed"
+        }
+      ]
+    }
+  }
+]

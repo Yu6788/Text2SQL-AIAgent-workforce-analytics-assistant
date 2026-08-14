@@ -1,0 +1,92 @@
+[
+  {
+    "id": "Q001",
+    "question": "How many active employees are there?",
+    "difficulty": "easy",
+    "category": "single_table_count",
+    "expected_tables": ["employees"],
+    "gold_sql": "SELECT COUNT(*) AS active_employees FROM employees WHERE employment_status = 'Active'",
+    "notes": "Default active headcount definition."
+  },
+  {
+    "id": "Q002",
+    "question": "How many active employees are in each business unit?",
+    "difficulty": "medium",
+    "category": "multi_table_group_by",
+    "expected_tables": ["employees", "organizations"],
+    "gold_sql": "SELECT o.business_unit, COUNT(*) AS active_headcount FROM employees e JOIN organizations o ON e.organization_id = o.organization_id WHERE e.employment_status = 'Active' GROUP BY o.business_unit ORDER BY active_headcount DESC, o.business_unit",
+    "notes": "Requires joining employees to organizations."
+  },
+  {
+    "id": "Q003",
+    "question": "Which organization has the highest active headcount?",
+    "difficulty": "medium",
+    "category": "multi_table_top_n",
+    "expected_tables": ["employees", "organizations"],
+    "gold_sql": "SELECT o.organization_name, COUNT(*) AS active_headcount FROM employees e JOIN organizations o ON e.organization_id = o.organization_id WHERE e.employment_status = 'Active' GROUP BY o.organization_name ORDER BY active_headcount DESC, o.organization_name LIMIT 1",
+    "notes": "Top organization by active employee count."
+  },
+  {
+    "id": "Q004",
+    "question": "What was the 2026 H1 talent review completion rate?",
+    "difficulty": "easy",
+    "category": "single_table_ratio",
+    "expected_tables": ["talent_reviews"],
+    "gold_sql": "SELECT ROUND(100.0 * SUM(CASE WHEN review_status = 'Completed' THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN review_status != 'Cancelled' THEN 1 ELSE 0 END), 0), 1) AS review_completion_rate_pct FROM talent_reviews WHERE review_cycle = '2026_H1'",
+    "notes": "Completed divided by non-cancelled reviews."
+  },
+  {
+    "id": "Q005",
+    "question": "Which business unit had the highest average performance rating in 2026 H1?",
+    "difficulty": "medium",
+    "category": "multi_table_aggregation",
+    "expected_tables": ["talent_reviews", "employees", "organizations"],
+    "gold_sql": "SELECT o.business_unit, ROUND(AVG(tr.performance_rating), 2) AS avg_performance_rating FROM talent_reviews tr JOIN employees e ON tr.employee_id = e.employee_id JOIN organizations o ON e.organization_id = o.organization_id WHERE tr.review_cycle = '2026_H1' AND tr.review_status = 'Completed' GROUP BY o.business_unit ORDER BY avg_performance_rating DESC, o.business_unit LIMIT 1",
+    "notes": "Requires review records joined to employee organization membership."
+  },
+  {
+    "id": "Q006",
+    "question": "Which development program had the highest completion rate?",
+    "difficulty": "medium",
+    "category": "bridge_table_ratio",
+    "expected_tables": ["development_programs", "employee_programs"],
+    "gold_sql": "SELECT dp.program_name, dp.program_type, ROUND(100.0 * SUM(CASE WHEN ep.participation_status = 'Completed' THEN 1 ELSE 0 END) / NULLIF(SUM(CASE WHEN ep.participation_status != 'Withdrawn' THEN 1 ELSE 0 END), 0), 1) AS completion_rate_pct FROM employee_programs ep JOIN development_programs dp ON ep.program_id = dp.program_id GROUP BY dp.program_name, dp.program_type ORDER BY completion_rate_pct DESC, dp.program_name LIMIT 1",
+    "notes": "Completed enrollments divided by non-withdrawn enrollments."
+  },
+  {
+    "id": "Q007",
+    "question": "How many employees were promoted in Q2 2026?",
+    "difficulty": "easy",
+    "category": "single_table_date_filter",
+    "expected_tables": ["internal_moves"],
+    "gold_sql": "SELECT COUNT(DISTINCT employee_id) AS promoted_employees FROM internal_moves WHERE move_type = 'Promotion' AND move_date >= DATE '2026-04-01' AND move_date < DATE '2026-07-01'",
+    "notes": "Promotion events filtered to Q2 2026."
+  },
+  {
+    "id": "Q008",
+    "question": "What was the annual internal mobility trend from 2024 through 2026?",
+    "difficulty": "medium",
+    "category": "time_series",
+    "expected_tables": ["internal_moves"],
+    "gold_sql": "SELECT EXTRACT(year FROM move_date) AS move_year, COUNT(DISTINCT employee_id) AS employees_with_internal_moves FROM internal_moves WHERE move_date >= DATE '2024-01-01' AND move_date < DATE '2027-01-01' GROUP BY move_year ORDER BY move_year",
+    "notes": "Counts unique employees with internal move events by year."
+  },
+  {
+    "id": "Q009",
+    "question": "Which business unit had the highest promotion rate?",
+    "difficulty": "hard",
+    "category": "multi_table_ratio",
+    "expected_tables": ["internal_moves", "employees", "organizations"],
+    "gold_sql": "WITH active_by_bu AS (SELECT o.business_unit, COUNT(DISTINCT e.employee_id) AS active_employees FROM employees e JOIN organizations o ON e.organization_id = o.organization_id WHERE e.employment_status = 'Active' GROUP BY o.business_unit), promoted_by_bu AS (SELECT o.business_unit, COUNT(DISTINCT im.employee_id) AS promoted_employees FROM internal_moves im JOIN employees e ON im.employee_id = e.employee_id JOIN organizations o ON e.organization_id = o.organization_id WHERE im.move_type = 'Promotion' GROUP BY o.business_unit) SELECT a.business_unit, ROUND(100.0 * COALESCE(p.promoted_employees, 0) / NULLIF(a.active_employees, 0), 1) AS promotion_rate_pct FROM active_by_bu a LEFT JOIN promoted_by_bu p ON a.business_unit = p.business_unit ORDER BY promotion_rate_pct DESC, a.business_unit LIMIT 1",
+    "notes": "Uses active employees as denominator."
+  },
+  {
+    "id": "Q010",
+    "question": "Did employees who completed Leadership Development programs have a higher later promotion rate?",
+    "difficulty": "hard",
+    "category": "temporal_correlation",
+    "expected_tables": ["employees", "development_programs", "employee_programs", "internal_moves"],
+    "gold_sql": "WITH leadership_completers AS (SELECT ep.employee_id, MIN(ep.completion_date) AS completion_date FROM employee_programs ep JOIN development_programs dp ON ep.program_id = dp.program_id WHERE dp.program_type = 'Leadership Development' AND ep.participation_status = 'Completed' AND ep.completion_date IS NOT NULL GROUP BY ep.employee_id), employee_flags AS (SELECT e.employee_id, CASE WHEN lc.employee_id IS NOT NULL THEN 'Completed Leadership Development' ELSE 'Did Not Complete Leadership Development' END AS cohort, CASE WHEN EXISTS (SELECT 1 FROM internal_moves im WHERE im.employee_id = e.employee_id AND im.move_type = 'Promotion' AND (lc.completion_date IS NULL OR im.move_date > lc.completion_date)) THEN 1 ELSE 0 END AS later_promoted FROM employees e LEFT JOIN leadership_completers lc ON e.employee_id = lc.employee_id) SELECT cohort, COUNT(*) AS employees, ROUND(100.0 * SUM(later_promoted) / COUNT(*), 1) AS later_promotion_rate_pct FROM employee_flags GROUP BY cohort ORDER BY later_promotion_rate_pct DESC, cohort",
+    "notes": "Synthetic correlation only, not causation."
+  }
+]

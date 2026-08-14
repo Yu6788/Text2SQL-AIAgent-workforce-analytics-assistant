@@ -1,0 +1,40 @@
+table_name: organizations
+description: >
+  Organizational units at Atlas Workforce Solutions, including business
+  unit, region, leader, creation date, and active/inactive status.
+grain: One row represents one organization.
+primary_key:
+  - organization_id
+foreign_keys:
+  org_leader_id:
+    references: employees.employee_id
+columns:
+  - name: organization_id
+    type: VARCHAR
+    description: Unique organization identifier.
+  - name: organization_name
+    type: VARCHAR
+    description: Human-readable synthetic organization name.
+  - name: business_unit
+    type: VARCHAR
+    description: Business unit such as Technology, Operations, Sales, or People.
+  - name: region
+    type: VARCHAR
+    description: Region such as North America, Europe, Asia Pacific, or Latin America.
+  - name: org_leader_id
+    type: VARCHAR
+    description: Employee identifier for the organization leader.
+  - name: created_date
+    type: DATE
+    description: Date the organization was created.
+  - name: organization_status
+    type: VARCHAR
+    description: Active or Inactive organization status.
+sample_rows:
+  - organization_id: ORG001
+    organization_name: Technology Org 01
+    business_unit: Technology
+    region: North America
+    org_leader_id: E00042
+    created_date: 2020-01-15
+    organization_status: Active

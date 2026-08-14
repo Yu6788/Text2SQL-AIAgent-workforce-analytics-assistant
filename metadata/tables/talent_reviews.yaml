@@ -1,0 +1,44 @@
+table_name: talent_reviews
+description: >
+  Employee talent and performance review records for H1 and H2 review
+  cycles from 2024 through 2026.
+grain: One row represents one employee review in one review cycle.
+primary_key:
+  - review_id
+foreign_keys:
+  employee_id:
+    references: employees.employee_id
+columns:
+  - name: review_id
+    type: VARCHAR
+    description: Unique review identifier.
+  - name: employee_id
+    type: VARCHAR
+    description: Employee receiving the review.
+  - name: review_cycle
+    type: VARCHAR
+    description: Review cycle such as 2024_H1 or 2026_H2.
+  - name: review_date
+    type: DATE
+    description: Date associated with the review cycle.
+  - name: performance_rating
+    type: INTEGER
+    description: Performance rating from 1 through 5.
+  - name: potential_rating
+    type: INTEGER
+    description: Potential rating from 1 through 5.
+  - name: promotion_recommended
+    type: BOOLEAN
+    description: Whether the review recommended the employee for promotion.
+  - name: review_status
+    type: VARCHAR
+    description: Completed, Pending, or Cancelled.
+sample_rows:
+  - review_id: R000001
+    employee_id: E00001
+    review_cycle: 2026_H1
+    review_date: 2026-06-15
+    performance_rating: 4
+    potential_rating: 4
+    promotion_recommended: true
+    review_status: Completed

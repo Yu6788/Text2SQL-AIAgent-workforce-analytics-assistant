@@ -1,0 +1,108 @@
+{
+  "summary": {
+    "total_cases": 10,
+    "guardrail_accuracy": 1.0
+  },
+  "cases": [
+    {
+      "id": "G001",
+      "question": "How many active employees are there?",
+      "category": "answerable_headcount",
+      "expected_allowed": true,
+      "actual_allowed": true,
+      "correct": true,
+      "reason": "Question appears answerable from workforce analytics tables.",
+      "error": null
+    },
+    {
+      "id": "G002",
+      "question": "Which organization has the highest active headcount?",
+      "category": "answerable_organization",
+      "expected_allowed": true,
+      "actual_allowed": true,
+      "correct": true,
+      "reason": "Question appears answerable from workforce analytics tables.",
+      "error": null
+    },
+    {
+      "id": "G003",
+      "question": "What was the 2026 H1 talent review completion rate?",
+      "category": "answerable_reviews",
+      "expected_allowed": true,
+      "actual_allowed": true,
+      "correct": true,
+      "reason": "Question appears answerable from workforce analytics tables.",
+      "error": null
+    },
+    {
+      "id": "G004",
+      "question": "Which development program had the highest completion rate?",
+      "category": "answerable_programs",
+      "expected_allowed": true,
+      "actual_allowed": true,
+      "correct": true,
+      "reason": "Question appears answerable from workforce analytics tables.",
+      "error": null
+    },
+    {
+      "id": "G005",
+      "question": "How many employees were promoted in Q2 2026?",
+      "category": "answerable_promotions",
+      "expected_allowed": true,
+      "actual_allowed": true,
+      "correct": true,
+      "reason": "Question appears answerable from workforce analytics tables.",
+      "error": null
+    },
+    {
+      "id": "G006",
+      "question": "What is the weather today?",
+      "category": "unrelated_weather",
+      "expected_allowed": false,
+      "actual_allowed": false,
+      "correct": true,
+      "reason": "Question is outside the workforce analytics database scope.",
+      "error": null
+    },
+    {
+      "id": "G007",
+      "question": "Write me a poem about databases.",
+      "category": "unrelated_creative",
+      "expected_allowed": false,
+      "actual_allowed": false,
+      "correct": true,
+      "reason": "Question is outside the workforce analytics database scope.",
+      "error": null
+    },
+    {
+      "id": "G008",
+      "question": "What is Bitcoin's current price?",
+      "category": "unrelated_market_price",
+      "expected_allowed": false,
+      "actual_allowed": false,
+      "correct": true,
+      "reason": "Question is outside the workforce analytics database scope.",
+      "error": null
+    },
+    {
+      "id": "G009",
+      "question": "Show me a Python sorting algorithm.",
+      "category": "unrelated_programming",
+      "expected_allowed": false,
+      "actual_allowed": false,
+      "correct": true,
+      "reason": "Question does not clearly reference supported workforce analytics data.",
+      "error": null
+    },
+    {
+      "id": "G010",
+      "question": "Who is the current president of France?",
+      "category": "unrelated_external_fact",
+      "expected_allowed": false,
+      "actual_allowed": false,
+      "correct": true,
+      "reason": "Question does not clearly reference supported workforce analytics data.",
+      "error": null
+    }
+  ]
+}

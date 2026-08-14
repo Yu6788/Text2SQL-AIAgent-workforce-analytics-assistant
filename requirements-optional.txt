@@ -1,0 +1,6 @@
+# Optional dependencies for production-style embedding, FAISS indexing,
+# and cross-encoder reranking experiments. The Streamlit demo does not
+# require these packages.
+
+sentence-transformers>=3.0
+faiss-cpu>=1.8

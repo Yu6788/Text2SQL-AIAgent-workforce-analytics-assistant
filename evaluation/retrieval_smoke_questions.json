@@ -1,0 +1,22 @@
+[
+  {
+    "id": "R001",
+    "question": "How many active employees are in each business unit?",
+    "expected_tables": ["employees", "organizations"]
+  },
+  {
+    "id": "R002",
+    "question": "What was the 2026 H1 talent review completion rate?",
+    "expected_tables": ["talent_reviews"]
+  },
+  {
+    "id": "R003",
+    "question": "Which development program had the highest completion rate?",
+    "expected_tables": ["development_programs", "employee_programs"]
+  },
+  {
+    "id": "R004",
+    "question": "Did employees who completed Leadership Development programs have a higher later promotion rate?",
+    "expected_tables": ["employees", "development_programs", "employee_programs", "internal_moves"]
+  }
+]

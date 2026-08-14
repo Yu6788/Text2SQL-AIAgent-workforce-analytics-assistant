@@ -1,0 +1,46 @@
+business_context:
+  company: Atlas Workforce Solutions
+  description: >
+    Synthetic workforce and talent-management analytics data covering
+    2024-01-01 through 2026-12-31. The data contains no real employees
+    and no PII.
+
+metrics:
+  active_headcount:
+    default_definition: >
+      Count employees where employment_status = 'Active'.
+    point_in_time_definition: >
+      Count employees where hire_date <= point_in_time and
+      (termination_date is null or termination_date > point_in_time).
+
+  promotion_rate:
+    definition: >
+      Unique employees with at least one internal_moves row where
+      move_type = 'Promotion' divided by the chosen eligible workforce
+      denominator. If the question does not specify a denominator, use
+      active employees for the same business grouping.
+
+  review_completion_rate:
+    definition: >
+      Completed reviews divided by all non-cancelled expected reviews.
+      Use review_status = 'Completed' for numerator and review_status !=
+      'Cancelled' for denominator.
+
+  program_completion_rate:
+    definition: >
+      Completed employee_programs enrollments divided by all non-withdrawn
+      enrollments.
+
+  internal_mobility_rate:
+    definition: >
+      Unique employees with at least one qualifying internal_moves row
+      divided by the chosen active workforce denominator.
+
+  high_performance:
+    definition: performance_rating >= 4
+
+notes:
+  leadership_program_correlation: >
+    The synthetic data intentionally gives employees who complete
+    Leadership Development programs a higher later promotion rate. This
+    is a synthetic correlation and should not be interpreted as causation.

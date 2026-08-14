@@ -1,0 +1,57 @@
+project:
+  name: Atlas Workforce Text-to-SQL
+  environment: development
+
+llm:
+  provider: stub
+  model: deterministic_sql_rules_v1
+  base_url:
+
+data:
+  random_seed: 42
+  generated_dir: data/generated
+  database_path: data/atlas_workforce.duckdb
+
+database:
+  type: duckdb
+  path: data/atlas_workforce.duckdb
+  read_only: true
+  query_timeout_seconds: 10
+  max_result_rows: 200
+
+rag:
+  embedding_model: BAAI/bge-small-en-v1.5
+  reranker_model: cross-encoder/ms-marco-MiniLM-L6-v2
+  retrieval_top_k: 20
+  rerank_top_k: 4
+  max_metadata_tokens: 450
+
+vector_store:
+  type: faiss
+  index_type: IndexFlatIP
+  index_path: data/faiss_index
+
+sql:
+  dialect: duckdb
+  max_repair_attempts: 3
+  allow_cross_join: false
+
+api:
+  request_timeout_seconds: 30
+  max_attempts: 3
+  initial_backoff_seconds: 1
+  max_backoff_seconds: 8
+
+structured_output:
+  max_retries: 1
+
+prompts:
+  guardrail: guardrail_v1
+  sql_generation: sql_generation_v1
+  sql_repair: sql_repair_v1
+  summary: summary_v1
+
+logging:
+  enabled: true
+  log_path: logs/runs.jsonl
+  level: INFO

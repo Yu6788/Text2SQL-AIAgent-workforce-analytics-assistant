@@ -1,0 +1,62 @@
+[
+  {
+    "id": "G001",
+    "question": "How many active employees are there?",
+    "expected_allowed": true,
+    "category": "answerable_headcount"
+  },
+  {
+    "id": "G002",
+    "question": "Which organization has the highest active headcount?",
+    "expected_allowed": true,
+    "category": "answerable_organization"
+  },
+  {
+    "id": "G003",
+    "question": "What was the 2026 H1 talent review completion rate?",
+    "expected_allowed": true,
+    "category": "answerable_reviews"
+  },
+  {
+    "id": "G004",
+    "question": "Which development program had the highest completion rate?",
+    "expected_allowed": true,
+    "category": "answerable_programs"
+  },
+  {
+    "id": "G005",
+    "question": "How many employees were promoted in Q2 2026?",
+    "expected_allowed": true,
+    "category": "answerable_promotions"
+  },
+  {
+    "id": "G006",
+    "question": "What is the weather today?",
+    "expected_allowed": false,
+    "category": "unrelated_weather"
+  },
+  {
+    "id": "G007",
+    "question": "Write me a poem about databases.",
+    "expected_allowed": false,
+    "category": "unrelated_creative"
+  },
+  {
+    "id": "G008",
+    "question": "What is Bitcoin's current price?",
+    "expected_allowed": false,
+    "category": "unrelated_market_price"
+  },
+  {
+    "id": "G009",
+    "question": "Show me a Python sorting algorithm.",
+    "expected_allowed": false,
+    "category": "unrelated_programming"
+  },
+  {
+    "id": "G010",
+    "question": "Who is the current president of France?",
+    "expected_allowed": false,
+    "category": "unrelated_external_fact"
+  }
+]

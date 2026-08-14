@@ -1,0 +1,20 @@
+[
+  {
+    "id": "RPR001",
+    "question": "Repair demo unsafe: how many active employees are there?",
+    "difficulty": "repair",
+    "category": "validator_unauthorized_table",
+    "expected_tables": ["employees"],
+    "gold_sql": "SELECT COUNT(*) AS active_employees FROM employees WHERE employment_status = 'Active'",
+    "notes": "Stub initially generates an unauthorized salaries table, then repairs to active employee count."
+  },
+  {
+    "id": "RPR002",
+    "question": "Repair demo bad column: count employees by employment status.",
+    "difficulty": "repair",
+    "category": "database_binder_error",
+    "expected_tables": ["employees"],
+    "gold_sql": "SELECT employment_status, COUNT(*) AS employees FROM employees GROUP BY employment_status ORDER BY employment_status",
+    "notes": "Stub initially generates a hallucinated employee_status column, then repairs to employment_status."
+  }
+]

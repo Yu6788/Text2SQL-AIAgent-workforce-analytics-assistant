@@ -1,0 +1,51 @@
+organization_id,organization_name,business_unit,region,org_leader_id,created_date,organization_status
+ORG001,Technology Org 01,Technology,North America,E02564,2018-07-15,Active
+ORG002,Operations Org 02,Operations,Europe,E01590,2022-08-22,Active
+ORG003,Customer Experience Org 03,Customer Experience,Asia Pacific,E03949,2021-12-04,Active
+ORG004,Finance Org 04,Finance,Latin America,E04881,2020-08-19,Active
+ORG005,People Org 05,People,North America,E02603,2020-08-06,Active
+ORG006,Sales Org 06,Sales,Europe,E00800,2023-02-24,Active
+ORG007,Marketing Org 07,Marketing,Asia Pacific,E02397,2018-07-08,Active
+ORG008,Technology Org 08,Technology,Latin America,E03710,2022-03-08,Active
+ORG009,Operations Org 09,Operations,North America,E00124,2019-03-18,Active
+ORG010,Customer Experience Org 10,Customer Experience,Europe,E03981,2018-07-26,Active
+ORG011,Finance Org 11,Finance,Asia Pacific,E04005,2021-02-26,Active
+ORG012,People Org 12,People,Latin America,E01615,2023-11-07,Active
+ORG013,Sales Org 13,Sales,North America,E02902,2022-05-31,Active
+ORG014,Marketing Org 14,Marketing,Europe,E03859,2022-07-25,Active
+ORG015,Technology Org 15,Technology,Asia Pacific,E03215,2022-04-21,Active
+ORG016,Operations Org 16,Operations,Latin America,E00038,2022-09-18,Active
+ORG017,Customer Experience Org 17,Customer Experience,North America,E02978,2021-01-28,Active
+ORG018,Finance Org 18,Finance,Europe,E00939,2018-10-08,Active
+ORG019,People Org 19,People,Asia Pacific,E02872,2023-01-14,Active
+ORG020,Sales Org 20,Sales,Latin America,E00468,2020-09-13,Active
+ORG021,Marketing Org 21,Marketing,North America,E04994,2020-12-31,Active
+ORG022,Technology Org 22,Technology,Europe,E00547,2020-03-23,Active
+ORG023,Operations Org 23,Operations,Asia Pacific,E04897,2019-02-04,Active
+ORG024,Customer Experience Org 24,Customer Experience,Latin America,E00493,2023-07-23,Active
+ORG025,Finance Org 25,Finance,North America,E03098,2022-09-08,Active
+ORG026,People Org 26,People,Europe,E02199,2021-11-11,Active
+ORG027,Sales Org 27,Sales,Asia Pacific,E00591,2020-05-31,Active
+ORG028,Marketing Org 28,Marketing,Latin America,E01535,2022-12-07,Active
+ORG029,Technology Org 29,Technology,North America,E00229,2021-04-09,Active
+ORG030,Operations Org 30,Operations,Europe,E00324,2020-08-29,Active
+ORG031,Customer Experience Org 31,Customer Experience,Asia Pacific,E02903,2020-09-13,Active
+ORG032,Finance Org 32,Finance,Latin America,E01015,2019-05-13,Active
+ORG033,People Org 33,People,North America,E04222,2018-07-21,Active
+ORG034,Sales Org 34,Sales,Europe,E03179,2021-04-29,Active
+ORG035,Marketing Org 35,Marketing,Asia Pacific,E03156,2023-04-29,Active
+ORG036,Technology Org 36,Technology,Latin America,E00686,2018-05-20,Active
+ORG037,Operations Org 37,Operations,North America,E04713,2023-02-23,Active
+ORG038,Customer Experience Org 38,Customer Experience,Europe,E03135,2022-12-18,Active
+ORG039,Finance Org 39,Finance,Asia Pacific,E01130,2019-08-30,Active
+ORG040,People Org 40,People,Latin America,E00068,2021-10-15,Active
+ORG041,Sales Org 41,Sales,North America,E03582,2018-12-28,Active
+ORG042,Marketing Org 42,Marketing,Europe,E00862,2022-07-19,Active
+ORG043,Technology Org 43,Technology,Asia Pacific,E01910,2022-03-15,Active
+ORG044,Operations Org 44,Operations,Latin America,E02454,2020-02-16,Active
+ORG045,Customer Experience Org 45,Customer Experience,North America,E03775,2018-05-29,Active
+ORG046,Finance Org 46,Finance,Europe,E01299,2023-10-27,Active
+ORG047,People Org 47,People,Asia Pacific,E01200,2020-09-03,Active
+ORG048,Sales Org 48,Sales,Latin America,E01774,2023-05-10,Active
+ORG049,Marketing Org 49,Marketing,North America,E04279,2022-01-24,Inactive
+ORG050,Technology Org 50,Technology,Europe,E03143,2022-09-01,Inactive

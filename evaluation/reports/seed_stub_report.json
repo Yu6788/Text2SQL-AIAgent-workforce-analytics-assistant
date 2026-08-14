@@ -1,0 +1,280 @@
+{
+  "summary": {
+    "total_cases": 10,
+    "average_table_recall_at_4": 1.0,
+    "all_required_tables_recall_at_4": 1.0,
+    "execution_success_rate": 0.3,
+    "execution_accuracy": 0.3,
+    "median_latency_ms": 11.544749999999993
+  },
+  "cases": [
+    {
+      "id": "Q001",
+      "question": "How many active employees are there?",
+      "difficulty": "easy",
+      "category": "single_table_count",
+      "expected_tables": [
+        "employees"
+      ],
+      "retrieved_tables": [
+        "employees",
+        "organizations",
+        "employee_programs",
+        "internal_moves"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "API_ERROR",
+      "generated_sql": null,
+      "validated_tables": [],
+      "execution_success": false,
+      "result_equivalent": false,
+      "gold_error": null,
+      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
+      "latency_ms": 20.45158300000005
+    },
+    {
+      "id": "Q002",
+      "question": "How many active employees are in each business unit?",
+      "difficulty": "medium",
+      "category": "multi_table_group_by",
+      "expected_tables": [
+        "employees",
+        "organizations"
+      ],
+      "retrieved_tables": [
+        "employees",
+        "organizations",
+        "employee_programs",
+        "talent_reviews"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "SUCCESS",
+      "generated_sql": "SELECT\n                    o.business_unit,\n                    COUNT(*) AS active_headcount\n                FROM employees e\n                JOIN organizations o\n                    ON e.organization_id = o.organization_id\n                WHERE e.employment_status = 'Active'\n                GROUP BY o.business_unit\n                ORDER BY active_headcount DESC",
+      "validated_tables": [
+        "employees",
+        "organizations"
+      ],
+      "execution_success": true,
+      "result_equivalent": true,
+      "gold_error": null,
+      "generated_error": null,
+      "latency_ms": 36.160957999999965
+    },
+    {
+      "id": "Q003",
+      "question": "Which organization has the highest active headcount?",
+      "difficulty": "medium",
+      "category": "multi_table_top_n",
+      "expected_tables": [
+        "employees",
+        "organizations"
+      ],
+      "retrieved_tables": [
+        "employees",
+        "organizations",
+        "internal_moves",
+        "development_programs"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "API_ERROR",
+      "generated_sql": null,
+      "validated_tables": [],
+      "execution_success": false,
+      "result_equivalent": false,
+      "gold_error": null,
+      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
+      "latency_ms": 10.19800000000004
+    },
+    {
+      "id": "Q004",
+      "question": "What was the 2026 H1 talent review completion rate?",
+      "difficulty": "easy",
+      "category": "single_table_ratio",
+      "expected_tables": [
+        "talent_reviews"
+      ],
+      "retrieved_tables": [
+        "talent_reviews",
+        "employee_programs",
+        "organizations",
+        "internal_moves"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "SUCCESS",
+      "generated_sql": "SELECT\n                    ROUND(\n                        100.0 * SUM(CASE WHEN review_status = 'Completed' THEN 1 ELSE 0 END)\n                        / NULLIF(SUM(CASE WHEN review_status != 'Cancelled' THEN 1 ELSE 0 END), 0),\n                        1\n                    ) AS review_completion_rate_pct\n                FROM talent_reviews\n                WHERE review_cycle = '2026_H1'",
+      "validated_tables": [
+        "talent_reviews"
+      ],
+      "execution_success": true,
+      "result_equivalent": true,
+      "gold_error": null,
+      "generated_error": null,
+      "latency_ms": 18.209875000000043
+    },
+    {
+      "id": "Q005",
+      "question": "Which business unit had the highest average performance rating in 2026 H1?",
+      "difficulty": "medium",
+      "category": "multi_table_aggregation",
+      "expected_tables": [
+        "talent_reviews",
+        "employees",
+        "organizations"
+      ],
+      "retrieved_tables": [
+        "talent_reviews",
+        "organizations",
+        "employees",
+        "employee_programs"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "API_ERROR",
+      "generated_sql": null,
+      "validated_tables": [],
+      "execution_success": false,
+      "result_equivalent": false,
+      "gold_error": null,
+      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
+      "latency_ms": 8.846291000000006
+    },
+    {
+      "id": "Q006",
+      "question": "Which development program had the highest completion rate?",
+      "difficulty": "medium",
+      "category": "bridge_table_ratio",
+      "expected_tables": [
+        "development_programs",
+        "employee_programs"
+      ],
+      "retrieved_tables": [
+        "employee_programs",
+        "development_programs",
+        "employees",
+        "talent_reviews"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "SUCCESS",
+      "generated_sql": "SELECT\n                    dp.program_name,\n                    dp.program_type,\n                    ROUND(\n                        100.0 * SUM(CASE WHEN ep.participation_status = 'Completed' THEN 1 ELSE 0 END)\n                        / NULLIF(SUM(CASE WHEN ep.participation_status != 'Withdrawn' THEN 1 ELSE 0 END), 0),\n                        1\n                    ) AS completion_rate_pct\n                FROM employee_programs ep\n                JOIN development_programs dp\n                    ON ep.program_id = dp.program_id\n                GROUP BY dp.program_name, dp.program_type\n                ORDER BY completion_rate_pct DESC\n                LIMIT 1",
+      "validated_tables": [
+        "development_programs",
+        "employee_programs"
+      ],
+      "execution_success": true,
+      "result_equivalent": true,
+      "gold_error": null,
+      "generated_error": null,
+      "latency_ms": 18.716249999999988
+    },
+    {
+      "id": "Q007",
+      "question": "How many employees were promoted in Q2 2026?",
+      "difficulty": "easy",
+      "category": "single_table_date_filter",
+      "expected_tables": [
+        "internal_moves"
+      ],
+      "retrieved_tables": [
+        "employees",
+        "internal_moves",
+        "employee_programs",
+        "talent_reviews"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "API_ERROR",
+      "generated_sql": null,
+      "validated_tables": [],
+      "execution_success": false,
+      "result_equivalent": false,
+      "gold_error": null,
+      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
+      "latency_ms": 7.7203750000000015
+    },
+    {
+      "id": "Q008",
+      "question": "What was the annual internal mobility trend from 2024 through 2026?",
+      "difficulty": "medium",
+      "category": "time_series",
+      "expected_tables": [
+        "internal_moves"
+      ],
+      "retrieved_tables": [
+        "internal_moves",
+        "talent_reviews",
+        "employees",
+        "organizations"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "API_ERROR",
+      "generated_sql": null,
+      "validated_tables": [],
+      "execution_success": false,
+      "result_equivalent": false,
+      "gold_error": null,
+      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
+      "latency_ms": 9.913082999999933
+    },
+    {
+      "id": "Q009",
+      "question": "Which business unit had the highest promotion rate?",
+      "difficulty": "hard",
+      "category": "multi_table_ratio",
+      "expected_tables": [
+        "internal_moves",
+        "employees",
+        "organizations"
+      ],
+      "retrieved_tables": [
+        "organizations",
+        "talent_reviews",
+        "internal_moves",
+        "employees"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "API_ERROR",
+      "generated_sql": null,
+      "validated_tables": [],
+      "execution_success": false,
+      "result_equivalent": false,
+      "gold_error": null,
+      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
+      "latency_ms": 9.63108299999993
+    },
+    {
+      "id": "Q010",
+      "question": "Did employees who completed Leadership Development programs have a higher later promotion rate?",
+      "difficulty": "hard",
+      "category": "temporal_correlation",
+      "expected_tables": [
+        "employees",
+        "development_programs",
+        "employee_programs",
+        "internal_moves"
+      ],
+      "retrieved_tables": [
+        "development_programs",
+        "employee_programs",
+        "employees",
+        "internal_moves"
+      ],
+      "retrieval_recall_at_4": 1.0,
+      "all_required_tables_retrieved_at_4": true,
+      "status": "API_ERROR",
+      "generated_sql": null,
+      "validated_tables": [],
+      "execution_success": false,
+      "result_equivalent": false,
+      "gold_error": null,
+      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
+      "latency_ms": 11.544749999999993
+    }
+  ]
+}
