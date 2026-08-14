@@ -16,7 +16,7 @@ Deploy this app with Streamlit Community Cloud from this GitHub repository.
 After deployment, add the Streamlit app URL here:
 
 ```text
-https://<your-app-name>.streamlit.app
+https://text2sql-aiagent-workforce-analytics-assistant-8phrvf5mmjdmxrb.streamlit.app/
 ```
 
 ## What It Demonstrates
