@@ -1,24 +1,28 @@
 # Engineering Architecture
 
-This document is a concise engineering overview for technical reviewers. It explains how the Workforce Analytics Assistant is structured, how a request moves through the system, and why the main design choices were made.
+This document explains the Workforce Analytics Assistant as an agentic Text-to-SQL workflow. It follows one user question from the Streamlit UI through context handling, schema retrieval, SQL generation, validation, execution, repair, and final answer generation.
 
-For product usage and exploration steps, see `DETAILED_INSTRUCTIONS.md`.
+For product usage and demo steps, see `DETAILED_INSTRUCTIONS.md`.
 
-## 1. System Overview
+## 1. End-To-End Flow
 
-The project is a Streamlit Text-to-SQL application backed by a LangGraph-style agent workflow, a synthetic DuckDB workforce database, SQL validation, schema retrieval, and an OpenAI-compatible LLM adapter.
+The project is a Streamlit application backed by a LangGraph-style workflow, a synthetic DuckDB workforce database, a schema RAG pipeline, SQL validation, and an OpenAI-compatible LLM adapter.
 
-High-level architecture:
+One request moves through this path:
 
 ```text
-Streamlit UI
+User question
+  -> Streamlit session state
   -> runtime service wiring
-  -> LangGraph workflow
-  -> LLM service / stub service
-  -> schema retrieval
+  -> optional follow-up resolution
+  -> guardrail
+  -> schema RAG retrieval
+  -> SQL generation
   -> SQL validation
   -> DuckDB execution
+  -> SQL repair, if needed
   -> natural-language summary
+  -> chat answer + workflow details
 ```
 
 Primary entrypoints:
@@ -29,99 +33,93 @@ src/atlas_workforce/runtime.py
 src/atlas_workforce/graph/workflow.py
 ```
 
-## 2. Request Flow
+The workflow is inspectable by design. Each run stores intermediate state such as retrieved tables, generated SQL, validation result, database result, repair attempts, and final answer.
 
-When a user submits a question, the app runs this flow:
+## 2. UI And Session Layer
 
-```text
-User question
-  -> Optional follow-up resolution
-  -> Guardrail
-  -> Schema retrieval
-  -> SQL generation
-  -> SQL validation
-  -> DuckDB execution
-  -> SQL repair, if validation or execution fails
-  -> Natural-language summary
-  -> Streamlit chat response
-```
-
-The UI stores the visible chat and previous agent state in `st.session_state`. For follow-up questions, the runtime passes the previous question, SQL, and answer to the LLM service so the new question can be resolved into a standalone workforce analytics question.
-
-## 3. Core Components
-
-### `app.py`
-
-Responsibilities:
-
-- Render the Streamlit UI.
-- Provide `Offline Demo` and `Live API` mode selection.
-- Maintain current-session chat state.
-- Submit questions into the runtime.
-- Display answer bubbles.
-- Display expandable workflow details.
-- Document product scope in the sidebar.
-
-The frontend is intentionally thin. It does not generate SQL directly; it delegates the agent run to `run_question`.
-
-### `src/atlas_workforce/runtime.py`
-
-Responsibilities:
-
-- Load settings.
-- Build table metadata documents.
-- Select LLM implementation.
-- Configure retrieval backend.
-- Create SQL validator and DuckDB executor.
-- Build workflow services.
-- Run the compiled graph.
-
-Important function:
-
-```python
-run_question(settings, root, question, options, previous_state=None, force_follow_up=False)
-```
-
-### `src/atlas_workforce/graph/workflow.py`
-
-Defines the graph execution.
-
-Main nodes:
+File:
 
 ```text
-guardrail
-retrieve_schema
-generate_sql
-validate_sql
-execute_sql
-repair_sql
-summarize
+app.py
 ```
 
-Conditional transitions:
+The Streamlit UI is intentionally thin. It does not build SQL directly. Its job is to collect the user question, choose runtime mode, preserve current-session conversation state, and render the workflow output.
 
-- Guardrail rejection ends the run.
-- SQL validation failure goes to repair unless retry limit is reached.
-- Database execution failure goes to repair unless retry limit is reached.
-- Successful execution goes to summary.
+Key responsibilities:
 
-### `src/atlas_workforce/graph/state.py`
+- Render the chat-style `Conversation` panel.
+- Provide `Offline Demo` and `Live API` modes.
+- Store visible chat turns in `st.session_state["chat_turns"]`.
+- Store the previous agent result in `st.session_state["last_state"]`.
+- Pass each question to `run_question`.
+- Show the final answer first, then expandable workflow details.
 
-Defines the shared `AgentState`.
+Conversation memory is current-session only. The app can resolve short follow-ups while the page remains open, but it does not persist long-term chat history.
 
-Important state fields:
+## 3. Runtime Service Wiring
+
+File:
+
+```text
+src/atlas_workforce/runtime.py
+```
+
+The runtime layer builds the services that the graph needs for one run.
+
+`build_workflow_services` wires together:
+
+- LLM service: local stub or configured OpenAI-compatible provider.
+- Business context loaded from `metadata/business_context.yaml`.
+- Table schema documents built from `metadata/tables/*.yaml`.
+- RAG embedder and vector store.
+- Optional reranker.
+- SQL validator.
+- Read-only DuckDB executor.
+- Graph retry limits and retrieval limits.
+
+The mode selection happens here:
+
+```text
+Offline Demo -> StubLLMService
+Live API     -> OpenAICompatibleLLMService
+```
+
+The deployed app uses lightweight retrieval by default:
+
+```text
+HashingEmbedder
+NumpyVectorStore built in memory
+LexicalReranker
+```
+
+This avoids downloading large embedding or reranking models on Streamlit Community Cloud.
+
+## 4. Graph State
+
+File:
+
+```text
+src/atlas_workforce/graph/state.py
+```
+
+Every node reads and writes a shared `AgentState`. Important fields include:
 
 ```text
 run_id
 user_question
 resolved_question
 is_follow_up
+follow_up_reason
 guardrail_allowed
 guardrail_reason
 retrieved_context
 retrieved_tables
+retrieval_scores
+reranker_scores
 generated_sql
+llm_reported_tables
 validation_result
+validated_tables
 db_result
 db_error
 sql_retry_count
@@ -130,88 +128,351 @@ final_answer
 status
 ```
 
-This state object is what makes the workflow inspectable in the UI.
+This state is the contract between backend workflow and UI inspection. The Streamlit app uses it to render `Show workflow details`.
 
-## 4. LLM Layer
-
-The project uses an interface-based LLM design.
-
-### Offline Stub
-
-File:
-
-```text
-src/atlas_workforce/llm/service.py
-```
-
-`StubLLMService` provides deterministic local behavior for:
-
-- Guardrail checks.
-- Supported SQL generation examples.
-- SQL repair demos.
-- Summary generation.
-- Lightweight follow-up resolution.
-
-This makes the project testable and demoable without API cost.
-
-### Live API Adapter
-
-File:
-
-```text
-src/atlas_workforce/llm/openai_compatible.py
-```
-
-`OpenAICompatibleLLMService` calls OpenAI-compatible chat completion APIs and expects structured JSON responses for:
-
-- `GuardrailResult`
-- `FollowUpResolutionResult`
-- `SQLGenerationResult`
-- `SQLRepairResult`
-- `SummaryResult`
-
-The adapter includes JSON extraction and Pydantic validation so the workflow can work with typed outputs instead of raw text.
-
-## 5. Retrieval Layer
+## 5. Follow-Up Resolution
 
 Files:
 
 ```text
-src/atlas_workforce/rag/documents.py
-src/atlas_workforce/rag/embeddings.py
-src/atlas_workforce/rag/retrieval.py
-src/atlas_workforce/rag/reranker.py
-src/atlas_workforce/rag/vector_store.py
+app.py
+src/atlas_workforce/runtime.py
+src/atlas_workforce/llm/service.py
+src/atlas_workforce/llm/openai_compatible.py
 ```
 
-The app builds schema documents from table metadata under:
+Before the graph starts, `run_question` checks whether there is a previous state. If so, it asks the LLM service to resolve the new question into a standalone question.
+
+Inputs:
 
 ```text
-metadata/
+new question
+previous question
+previous SQL
+previous answer
 ```
 
-In the Streamlit demo, retrieval uses:
+Outputs:
+
+```text
+resolved_question
+is_follow_up
+reason
+```
+
+Example:
+
+```text
+Previous question:
+How many active employees are in each business unit?
+
+New question:
+What about Technology?
+
+Resolved question:
+How many active employees are in the Technology business unit?
+```
+
+The graph then uses `resolved_question` for guardrail, retrieval, SQL generation, repair, and summary.
+
+## 6. Guardrail Node
+
+File:
+
+```text
+src/atlas_workforce/graph/workflow.py
+```
+
+Node:
+
+```text
+guardrail
+```
+
+The guardrail classifies whether the question belongs to the supported workforce analytics scope.
+
+Allowed scope:
+
+```text
+employees
+organizations
+talent_reviews
+development_programs
+employee_programs
+internal_moves
+```
+
+If allowed, the graph continues to schema retrieval. If rejected, the run ends before SQL generation.
+
+This protects the app from questions about:
+
+- Real employee records.
+- Salaries or protected attributes.
+- Weather, market data, current events, or external facts.
+- Legal, HR policy, or employment advice.
+
+Provider errors during this step are surfaced as `API_ERROR` states instead of stack traces.
+
+## 7. RAG Pipeline: Schema Context Construction
+
+RAG is used to decide which schema context the SQL generator should see. The goal is not to answer from retrieved text directly; the goal is to give the SQL generation node the right tables, columns, keys, and metric context.
+
+### 7.1 Source Metadata
+
+Files:
+
+```text
+metadata/business_context.yaml
+metadata/tables/*.yaml
+```
+
+Each table YAML contains:
+
+- Table name.
+- Description.
+- Grain.
+- Primary key.
+- Foreign keys.
+- Column names, types, and descriptions.
+- Sample rows.
+
+The six table metadata files are:
+
+```text
+organizations.yaml
+employees.yaml
+talent_reviews.yaml
+development_programs.yaml
+employee_programs.yaml
+internal_moves.yaml
+```
+
+### 7.2 Table Document Serialization
+
+File:
+
+```text
+src/atlas_workforce/rag/documents.py
+```
+
+`build_table_documents` loads each table YAML and converts it into a `TableDocument`:
+
+```text
+table_name
+text
+metadata
+```
+
+The serialized document includes:
+
+```text
+Table
+Description
+Grain
+Primary key
+Foreign keys
+Columns
+Sample rows
+```
+
+This creates one retrievable document per database table. Because the database has six tables, the deployed demo retrieves over a small but richly described schema corpus.
+
+### 7.3 Embedding Backends
+
+File:
+
+```text
+src/atlas_workforce/rag/embeddings.py
+```
+
+The app supports two embedding paths.
+
+Deployed lightweight path:
 
 ```text
 HashingEmbedder
+```
+
+`HashingEmbedder` tokenizes text, hashes tokens into a fixed 384-dimensional vector, applies signed token counts, and L2-normalizes the rows. It is deterministic, fast, and requires no model download.
+
+Optional semantic path:
+
+```text
+SentenceTransformerEmbedder
+```
+
+This uses `sentence-transformers` with the configured embedding model, such as:
+
+```text
+BAAI/bge-small-en-v1.5
+```
+
+Optional dependencies are kept in `requirements-optional.txt` so the Streamlit deployment stays lightweight.
+
+### 7.4 Vector Store Construction
+
+Files:
+
+```text
+src/atlas_workforce/rag/retrieval.py
+src/atlas_workforce/rag/vector_store.py
+scripts/build_vector_index.py
+```
+
+Runtime in-memory path:
+
+```text
+metadata/tables/*.yaml
+  -> TableDocument[]
+  -> HashingEmbedder.encode_documents
+  -> NumpyVectorStore
+```
+
+The in-memory `NumpyVectorStore` performs dot-product search over normalized vectors.
+
+Optional persisted index path:
+
+```text
+scripts/build_vector_index.py
+  -> build table documents
+  -> encode documents
+  -> save numpy or FAISS index
+  -> data/faiss_index/
+```
+
+Supported vector store backends:
+
+```text
+numpy
+faiss
+```
+
+The repository includes `data/faiss_index/` as an optional retrieval artifact, but the Streamlit app can rebuild a lightweight in-memory store at runtime.
+
+### 7.5 Candidate Retrieval
+
+File:
+
+```text
+src/atlas_workforce/rag/retrieval.py
+```
+
+At query time, retrieval does this:
+
+```text
+question
+  -> embedder.encode_query(question)
+  -> vector_store.search(query_embedding, retrieval_top_k)
+  -> candidate table documents
+```
+
+Default limits come from `config.yaml`:
+
+```text
+retrieval_top_k: 20
+rerank_top_k: 4
+```
+
+Because there are only six table documents, retrieval can consider the whole schema corpus, then return the top context after reranking.
+
+### 7.6 Reranking
+
+File:
+
+```text
+src/atlas_workforce/rag/reranker.py
+```
+
+The deployed app uses:
+
+```text
 LexicalReranker
 ```
 
-This keeps deployment lightweight and avoids downloading large models on Streamlit Community Cloud.
+It scores candidate tables using:
 
-Optional production-style retrieval experiments are supported through:
+- Question/document token overlap.
+- Table-specific aliases.
+- Small boosts for important query patterns.
+- A tiny contribution from the embedding retrieval score.
+
+Example alias groups:
 
 ```text
-requirements-optional.txt
+employees -> employee, employees, workforce, headcount, active
+organizations -> organization, org, business, unit, region
+talent_reviews -> review, talent, performance, rating
+internal_moves -> move, mobility, promotion, transfer
 ```
 
-Optional components include:
+Optional production-style reranking uses:
 
-- `sentence-transformers`
-- `faiss-cpu`
-- cross-encoder reranking
+```text
+CrossEncoderReranker
+```
 
-## 6. SQL Safety And Validation
+If cross-encoder scores are invalid, it falls back to the lexical reranker.
+
+### 7.7 Retrieved Context Sent To SQL Generation
+
+The retrieval node writes these fields into `AgentState`:
+
+```text
+retrieved_context
+retrieved_candidates
+retrieved_tables
+retrieval_scores
+reranker_scores
+status = SCHEMA_RETRIEVED
+```
+
+`retrieved_context` is the concatenated text of the selected table documents. This becomes the schema context for the SQL generation node.
+
+In the UI, the user can inspect:
+
+- Which tables were retrieved.
+- Retrieval scores.
+- Reranker scores.
+- The generated SQL that used that context.
+
+## 8. SQL Generation Node
+
+Files:
+
+```text
+src/atlas_workforce/graph/workflow.py
+src/atlas_workforce/llm/service.py
+src/atlas_workforce/llm/openai_compatible.py
+src/atlas_workforce/prompts/sql_generation_v1.txt
+```
+
+Node:
+
+```text
+generate_sql
+```
+
+Inputs:
+
+```text
+resolved question
+business context
+retrieved schema context
+```
+
+Output:
+
+```text
+SQLGenerationResult
+  sql
+  tables_used
+```
+
+In `Offline Demo`, `StubLLMService` uses deterministic rules for supported examples. In `Live API`, `OpenAICompatibleLLMService` calls a configured chat-completions API and asks for structured JSON.
+
+The generator is instructed to produce one safe DuckDB `SELECT` query, but the result is not trusted until validation passes.
+
+## 9. SQL Validation Node
 
 File:
 
@@ -219,17 +480,23 @@ File:
 src/atlas_workforce/sql/validator.py
 ```
 
-The SQL validator uses `sqlglot` to parse and normalize SQL before execution.
+Node:
+
+```text
+validate_sql
+```
+
+The validator uses `sqlglot` to parse and normalize SQL before execution.
 
 It enforces:
 
 - Exactly one SQL statement.
-- Read-only `SELECT` or `WITH ... SELECT` queries.
+- Read-only `SELECT` or `WITH ... SELECT`.
+- Allowed tables only.
 - No external file, URL, extension, or table access.
-- No unauthorized table usage.
 - No cross joins by default.
 
-The validator returns a structured result:
+The validator returns:
 
 ```text
 is_valid
@@ -239,14 +506,20 @@ error_type
 error_message
 ```
 
-Invalid SQL can trigger the repair node, up to a bounded retry limit.
+If validation passes, the graph continues to DuckDB execution. If validation fails, the graph routes to SQL repair unless the retry budget has been exhausted.
 
-## 7. Database Execution
+## 10. DuckDB Execution Node
 
 File:
 
 ```text
 src/atlas_workforce/sql/executor.py
+```
+
+Node:
+
+```text
+execute_sql
 ```
 
 Database:
@@ -255,16 +528,151 @@ Database:
 data/atlas_workforce.duckdb
 ```
 
-Execution properties:
+Execution behavior:
 
-- DuckDB local file.
-- Read-only execution mode.
-- Result row cap.
-- Structured database result returned to the graph.
+- Connects to DuckDB in read-only mode.
+- Wraps the validated SQL in an outer row limit.
+- Returns structured columns, rows, row count, truncation flag, and execution time.
 
-DuckDB was chosen because it is simple to ship with a portfolio/demo project and does not require external database infrastructure.
+Result shape:
 
-## 8. Data And Metadata
+```text
+columns
+rows
+row_count
+truncated
+execution_time_ms
+```
+
+If execution fails because of a database error, the graph routes to SQL repair unless the retry budget has been exhausted.
+
+## 11. SQL Repair Loop
+
+Files:
+
+```text
+src/atlas_workforce/graph/workflow.py
+src/atlas_workforce/llm/service.py
+src/atlas_workforce/llm/openai_compatible.py
+src/atlas_workforce/prompts/sql_repair_v1.txt
+```
+
+Node:
+
+```text
+repair_sql
+```
+
+Repair can be triggered by:
+
+- SQL validation failure.
+- DuckDB execution failure.
+
+Inputs:
+
+```text
+question
+business context
+retrieved schema context
+previous SQL
+current error
+retry history
+```
+
+The repaired SQL goes back through validation. It is not executed directly.
+
+The retry budget is configured in `config.yaml`:
+
+```text
+max_repair_attempts: 3
+```
+
+The graph keeps:
+
+```text
+sql_retry_count
+retry_history
+```
+
+This makes repair attempts visible in the UI.
+
+## 12. Summary Node
+
+Files:
+
+```text
+src/atlas_workforce/graph/workflow.py
+src/atlas_workforce/llm/service.py
+src/atlas_workforce/llm/openai_compatible.py
+src/atlas_workforce/prompts/summary_v1.txt
+```
+
+Node:
+
+```text
+summarize
+```
+
+Inputs:
+
+```text
+question
+generated SQL
+database columns
+database rows
+truncated flag
+```
+
+Output:
+
+```text
+SummaryResult
+  answer
+```
+
+The final answer is a natural-language summary grounded in the executed database result. The UI renders this answer directly in the chat, with the SQL and intermediate workflow details kept below it.
+
+## 13. LLM Adapter Design
+
+Files:
+
+```text
+src/atlas_workforce/llm/contracts.py
+src/atlas_workforce/llm/service.py
+src/atlas_workforce/llm/openai_compatible.py
+src/atlas_workforce/llm/factory.py
+```
+
+The project uses an interface-based LLM layer so the graph does not care whether it is using the local stub or a real provider.
+
+Structured contracts:
+
+```text
+GuardrailResult
+FollowUpResolutionResult
+SQLGenerationResult
+SQLRepairResult
+SummaryResult
+```
+
+`OpenAICompatibleLLMService` calls:
+
+```text
+{base_url}/chat/completions
+```
+
+with:
+
+```text
+temperature: 0
+response_format: {"type": "json_object"}
+```
+
+It extracts JSON, validates the response with Pydantic, and retries once for malformed structured output.
+
+Provider errors are converted into workflow states such as `API_ERROR`, which keeps failures inspectable rather than crashing the UI.
+
+## 14. Data Layer
 
 Synthetic data:
 
@@ -273,11 +681,12 @@ data/generated/*.csv
 data/atlas_workforce.duckdb
 ```
 
-Metadata:
+Generation/build scripts:
 
 ```text
-metadata/business_context.yaml
-metadata/tables/*.yaml
+scripts/generate_data.py
+scripts/validate_data.py
+scripts/build_database.py
 ```
 
 Tables:
@@ -291,9 +700,9 @@ employee_programs
 internal_moves
 ```
 
-The synthetic data is intentionally committed to the repository so Streamlit Community Cloud can start the app without running generation scripts at deployment time.
+The synthetic data is committed to the repository so Streamlit Community Cloud can start the app without running data generation during deployment.
 
-## 9. Deployment Architecture
+## 15. Deployment Architecture
 
 Deployment path:
 
@@ -329,7 +738,7 @@ LLM_BASE_URL = "<provider-base-url>"
 
 Root-level Streamlit secrets are exposed as environment variables at runtime, which the app reads through the settings/env loader.
 
-## 10. Testing Strategy
+## 16. Testing Strategy
 
 Tests live under:
 
@@ -340,10 +749,11 @@ tests/
 Coverage includes:
 
 - Synthetic data integrity.
-- Schema retrieval behavior.
+- Schema document construction and retrieval.
 - Guardrail behavior.
 - LLM adapter structured output handling.
 - Runtime happy path.
+- Homepage Offline Demo example coverage.
 - SQL validation.
 - SQL repair paths.
 - Stub summary behavior.
@@ -355,27 +765,17 @@ Current status:
 50 passed, 1 warning
 ```
 
-The stub path is important because it makes most logic testable without relying on external API availability.
+GitHub Actions runs the test suite and preflight checks on pushes and pull requests to `main`.
 
-## 11. Design Tradeoffs
+## 17. Design Tradeoffs
 
 ### Streamlit Instead Of A Full Frontend Stack
 
 Streamlit was chosen for fast iteration and simple deployment. The goal was to build a working analytics assistant, not a custom frontend framework.
 
-Tradeoff:
-
-- Faster product iteration.
-- Less control than React or a custom web stack.
-
 ### DuckDB Instead Of Postgres
 
-DuckDB was chosen because the dataset is synthetic and local.
-
-Tradeoff:
-
-- Easy to ship and deploy.
-- Not representative of multi-user production database infrastructure.
+DuckDB was chosen because the dataset is synthetic, local, and easy to ship with a portfolio demo.
 
 ### Stub Mode Plus Live API Mode
 
@@ -383,10 +783,10 @@ The stub keeps demos and tests deterministic. Live API mode shows realistic mode
 
 Tradeoff:
 
-- Offline Demo is narrow.
-- Live API depends on provider quality and cost.
+- Offline Demo is narrower.
+- Live API depends on provider quality, latency, and cost.
 
-### Lightweight Retrieval In The Deployed App
+### Lightweight RAG In The Deployed App
 
 The deployed app uses hashing and lexical retrieval rather than heavy embedding models.
 
@@ -404,12 +804,13 @@ Tradeoff:
 - Simple and transparent.
 - No long-term chat history or user-specific memory.
 
-## 12. Safety And Boundaries
+## 18. Safety Boundaries
 
 Safety mechanisms:
 
 - Synthetic data only.
 - Guardrail classification before SQL generation.
+- Schema-scoped SQL generation.
 - SQL parser validation before execution.
 - Read-only DuckDB execution.
 - Allowed table list.
@@ -425,7 +826,7 @@ Out of scope:
 - External facts such as weather, markets, or current events.
 - Production HR decision-making.
 
-## 13. Future Improvements
+## 19. Future Improvements
 
 Potential next steps:
 
@@ -437,9 +838,8 @@ Potential next steps:
 - Add query cost and latency telemetry.
 - Add chart generation for tabular results.
 - Add stronger prompt/version tracking.
-- Add CI on GitHub Actions.
 
-## 14. Quick Reviewer Path
+## 20. Quick Reviewer Path
 
 If you only have a few minutes:
 
@@ -448,7 +848,8 @@ If you only have a few minutes:
 3. Ask: `What about Technology?`
 4. Open `Show workflow details`.
 5. Review `src/atlas_workforce/graph/workflow.py`.
-6. Review `src/atlas_workforce/sql/validator.py`.
-7. Review `src/atlas_workforce/llm/openai_compatible.py`.
+6. Review `src/atlas_workforce/rag/retrieval.py`.
+7. Review `src/atlas_workforce/sql/validator.py`.
+8. Review `src/atlas_workforce/llm/openai_compatible.py`.
 
-That path shows the product, the agent workflow, the validation layer, and the provider adapter.
+That path shows the product, the agent workflow, the RAG pipeline, the validation layer, and the provider adapter.
