@@ -787,6 +787,8 @@ Current status:
 
 GitHub Actions runs the test suite and preflight checks on pushes and pull requests to `main`.
 
+For evaluation goals, seed sets, metrics, and current result snapshots, see `EVALUATION.md`.
+
 ## 18. Design Tradeoffs
 
 ### Streamlit Instead Of A Full Frontend Stack

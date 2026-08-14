@@ -7,7 +7,7 @@
     "execution_accuracy": 1.0,
     "retry_recovery_rate": 1.0,
     "cases_with_sql_retries": 2,
-    "median_latency_ms": 53.05337499999996
+    "median_latency_ms": 34.21866699999998
   },
   "cases": [
     {
@@ -40,7 +40,7 @@
       "result_equivalent": true,
       "gold_error": null,
       "generated_error": null,
-      "latency_ms": 53.05337499999996
+      "latency_ms": 34.21866699999998
     },
     {
       "id": "RPR002",
@@ -72,7 +72,7 @@
       "result_equivalent": true,
       "gold_error": null,
       "generated_error": null,
-      "latency_ms": 36.43383300000003
+      "latency_ms": 22.519167000000007
     }
   ]
 }

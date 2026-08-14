@@ -3,9 +3,11 @@
     "total_cases": 10,
     "average_table_recall_at_4": 1.0,
     "all_required_tables_recall_at_4": 1.0,
-    "execution_success_rate": 0.3,
+    "execution_success_rate": 0.6,
     "execution_accuracy": 0.3,
-    "median_latency_ms": 11.544749999999993
+    "retry_recovery_rate": 0,
+    "cases_with_sql_retries": 0,
+    "median_latency_ms": 18.192832999999965
   },
   "cases": [
     {
@@ -28,10 +30,13 @@
       "generated_sql": null,
       "validated_tables": [],
       "execution_success": false,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": false,
       "gold_error": null,
       "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
-      "latency_ms": 20.45158300000005
+      "latency_ms": 9.32725000000001
     },
     {
       "id": "Q002",
@@ -57,10 +62,13 @@
         "organizations"
       ],
       "execution_success": true,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": true,
       "gold_error": null,
       "generated_error": null,
-      "latency_ms": 36.160957999999965
+      "latency_ms": 31.29583300000005
     },
     {
       "id": "Q003",
@@ -79,14 +87,20 @@
       ],
       "retrieval_recall_at_4": 1.0,
       "all_required_tables_retrieved_at_4": true,
-      "status": "API_ERROR",
-      "generated_sql": null,
-      "validated_tables": [],
-      "execution_success": false,
+      "status": "SUCCESS",
+      "generated_sql": "SELECT\n                    o.organization_name,\n                    o.business_unit,\n                    COUNT(*) AS active_headcount\n                FROM employees e\n                JOIN organizations o\n                    ON e.organization_id = o.organization_id\n                WHERE e.employment_status = 'Active'\n                  AND o.organization_status = 'Active'\n                GROUP BY o.organization_name, o.business_unit\n                ORDER BY active_headcount DESC\n                LIMIT 1",
+      "validated_tables": [
+        "employees",
+        "organizations"
+      ],
+      "execution_success": true,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": false,
       "gold_error": null,
-      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
-      "latency_ms": 10.19800000000004
+      "generated_error": null,
+      "latency_ms": 17.529833999999965
     },
     {
       "id": "Q004",
@@ -110,10 +124,13 @@
         "talent_reviews"
       ],
       "execution_success": true,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": true,
       "gold_error": null,
       "generated_error": null,
-      "latency_ms": 18.209875000000043
+      "latency_ms": 18.192832999999965
     },
     {
       "id": "Q005",
@@ -133,14 +150,21 @@
       ],
       "retrieval_recall_at_4": 1.0,
       "all_required_tables_retrieved_at_4": true,
-      "status": "API_ERROR",
-      "generated_sql": null,
-      "validated_tables": [],
-      "execution_success": false,
+      "status": "SUCCESS",
+      "generated_sql": "SELECT\n                    o.business_unit,\n                    ROUND(AVG(tr.performance_rating), 2) AS average_performance_rating,\n                    COUNT(*) AS completed_reviews\n                FROM talent_reviews tr\n                JOIN employees e\n                    ON tr.employee_id = e.employee_id\n                JOIN organizations o\n                    ON e.organization_id = o.organization_id\n                WHERE tr.review_cycle = '2026_H1'\n                  AND tr.review_status = 'Completed'\n                GROUP BY o.business_unit\n                ORDER BY average_performance_rating DESC, completed_reviews DESC\n                LIMIT 1",
+      "validated_tables": [
+        "employees",
+        "organizations",
+        "talent_reviews"
+      ],
+      "execution_success": true,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": false,
       "gold_error": null,
-      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
-      "latency_ms": 8.846291000000006
+      "generated_error": null,
+      "latency_ms": 19.409125000000028
     },
     {
       "id": "Q006",
@@ -166,10 +190,13 @@
         "employee_programs"
       ],
       "execution_success": true,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": true,
       "gold_error": null,
       "generated_error": null,
-      "latency_ms": 18.716249999999988
+      "latency_ms": 20.430166999999997
     },
     {
       "id": "Q007",
@@ -191,10 +218,13 @@
       "generated_sql": null,
       "validated_tables": [],
       "execution_success": false,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": false,
       "gold_error": null,
       "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
-      "latency_ms": 7.7203750000000015
+      "latency_ms": 8.256374999999982
     },
     {
       "id": "Q008",
@@ -216,10 +246,13 @@
       "generated_sql": null,
       "validated_tables": [],
       "execution_success": false,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": false,
       "gold_error": null,
       "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
-      "latency_ms": 9.913082999999933
+      "latency_ms": 7.872917000000035
     },
     {
       "id": "Q009",
@@ -243,10 +276,13 @@
       "generated_sql": null,
       "validated_tables": [],
       "execution_success": false,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": false,
       "gold_error": null,
       "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
-      "latency_ms": 9.63108299999993
+      "latency_ms": 9.482667
     },
     {
       "id": "Q010",
@@ -267,14 +303,22 @@
       ],
       "retrieval_recall_at_4": 1.0,
       "all_required_tables_retrieved_at_4": true,
-      "status": "API_ERROR",
-      "generated_sql": null,
-      "validated_tables": [],
-      "execution_success": false,
+      "status": "SUCCESS",
+      "generated_sql": "WITH leadership_completed AS (\n                    SELECT\n                        ep.employee_id,\n                        MIN(ep.completion_date) AS completion_date\n                    FROM employee_programs ep\n                    JOIN development_programs dp\n                        ON ep.program_id = dp.program_id\n                    WHERE dp.program_type = 'Leadership Development'\n                      AND ep.participation_status = 'Completed'\n                      AND ep.completion_date IS NOT NULL\n                    GROUP BY ep.employee_id\n                ),\n                employee_cohorts AS (\n                    SELECT\n                        e.employee_id,\n                        CASE\n                            WHEN lc.employee_id IS NOT NULL THEN 'Completed Leadership Development'\n                            ELSE 'Did not complete Leadership Development'\n                        END AS cohort,\n                        lc.completion_date\n                    FROM employees e\n                    LEFT JOIN leadership_completed lc\n                        ON e.employee_id = lc.employee_id\n                    WHERE e.employment_status = 'Active'\n                ),\n                promotion_flags AS (\n                    SELECT\n                        ec.cohort,\n                        ec.employee_id,\n                        MAX(\n                            CASE\n                                WHEN im.move_type = 'Promotion'\n                                 AND (\n                                     ec.completion_date IS NULL\n                                     OR im.move_date > ec.completion_date\n                                 )\n                                THEN 1\n                                ELSE 0\n                            END\n                        ) AS had_later_promotion\n                    FROM employee_cohorts ec\n                    LEFT JOIN internal_moves im\n                        ON ec.employee_id = im.employee_id\n                    GROUP BY ec.cohort, ec.employee_id\n                )\n                SELECT\n                    cohort,\n                    COUNT(*) AS employees,\n                    SUM(had_later_promotion) AS promoted_employees,\n                    ROUND(100.0 * SUM(had_later_promotion) / NULLIF(COUNT(*), 0), 1) AS promotion_rate_pct\n                FROM promotion_flags\n                GROUP BY cohort\n                ORDER BY promotion_rate_pct DESC",
+      "validated_tables": [
+        "development_programs",
+        "employee_programs",
+        "employees",
+        "internal_moves"
+      ],
+      "execution_success": true,
+      "sql_retry_count": 0,
+      "retry_history": [],
+      "recovered_by_repair": false,
       "result_equivalent": false,
       "gold_error": null,
-      "generated_error": "StubLLMService does not have a deterministic SQL rule for this question.",
-      "latency_ms": 11.544749999999993
+      "generated_error": null,
+      "latency_ms": 23.809416999999943
     }
   ]
 }

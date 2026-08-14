@@ -28,6 +28,7 @@ Read these first:
 - `DETAILED_INSTRUCTIONS.md`: product guide, demo script, and user exploration instructions.
 - `ENGINEERING_ARCHITECTURE.md`: engineering architecture for technical reviewers.
 - `DATA_GUIDE.md`: dataset explanation, table relationships, metric definitions, and question families.
+- `EVALUATION.md`: test coverage, evaluation metrics, seed results, and known benchmark limits.
 
 Historical planning notes and phase specs are retained in `docs/archive/`. Some archived files reference the synthetic company name `Atlas Workforce Solutions`; the current product-facing name is `Workforce Analytics Assistant`.
 
@@ -195,6 +196,7 @@ The synthetic DuckDB database, generated CSVs, and metadata are intentionally in
 |-- config.yaml
 |-- requirements.txt
 |-- DATA_GUIDE.md
+|-- EVALUATION.md
 |-- data/
 |-- docs/archive/
 |-- metadata/
