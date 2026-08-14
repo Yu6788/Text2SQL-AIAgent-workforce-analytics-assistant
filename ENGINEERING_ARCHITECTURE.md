@@ -4,7 +4,25 @@ This document explains the Workforce Analytics Assistant as an agentic Text-to-S
 
 For product usage and demo steps, see `DETAILED_INSTRUCTIONS.md`.
 
-## 1. End-To-End Flow
+## 1. Technology Stack By Module
+
+| Module | Technologies | What They Do |
+| --- | --- | --- |
+| Product UI | Streamlit, custom CSS, `st.session_state` | Renders the chat interface, mode controls, sidebar info, current-session conversation state, and expandable workflow details. |
+| Agent workflow orchestration | LangGraph `StateGraph`, typed `AgentState` | Executes the node-based agent flow and routes between guardrail, retrieval, SQL generation, validation, execution, repair, and summary. |
+| LLM abstraction | Pydantic contracts, local `StubLLMService`, OpenAI-compatible chat-completions adapter | Provides deterministic Offline Demo behavior and Live API behavior through the same interface. |
+| Structured output layer | Pydantic, JSON extraction, provider retry logic | Converts model responses into typed objects such as `GuardrailResult`, `SQLGenerationResult`, and `SummaryResult`. |
+| Schema RAG pipeline | YAML metadata, table document serialization, hashing embeddings, numpy vector search, lexical reranking | Retrieves the most relevant table schema context before SQL generation. |
+| Optional retrieval stack | `sentence-transformers`, FAISS, cross-encoder reranking | Supports heavier semantic retrieval experiments outside the lightweight deployed app path. |
+| SQL safety layer | `sqlglot`, table allowlist, read-only query rules | Parses and validates generated SQL before it can reach the database. |
+| Database execution | DuckDB, local `.duckdb` file, read-only connection, result row cap | Executes validated SQL against synthetic workforce analytics data. |
+| Data foundation | pandas, numpy, generated CSVs, DuckDB build scripts, YAML metadata | Creates and ships the synthetic workforce dataset and schema documentation. |
+| Testing and evaluation | pytest, synthetic fixtures, guardrail/retrieval/repair evaluation scripts, GitHub Actions | Keeps the workflow testable without API cost and verifies core demo paths on push. |
+| Deployment | GitHub, Streamlit Community Cloud, Streamlit Secrets, `requirements.txt` | Hosts the app and injects Live API credentials securely at runtime. |
+
+The key engineering idea is separation of concerns: the UI does not generate SQL, the LLM does not execute SQL, retrieval only selects schema context, validation gates all generated SQL, and DuckDB only sees validated read-only queries.
+
+## 2. End-To-End Flow
 
 The project is a Streamlit application backed by a LangGraph-style workflow, a synthetic DuckDB workforce database, a schema RAG pipeline, SQL validation, and an OpenAI-compatible LLM adapter.
 
@@ -35,7 +53,7 @@ src/atlas_workforce/graph/workflow.py
 
 The workflow is inspectable by design. Each run stores intermediate state such as retrieved tables, generated SQL, validation result, database result, repair attempts, and final answer.
 
-## 2. UI And Session Layer
+## 3. UI And Session Layer
 
 File:
 
@@ -56,7 +74,7 @@ Key responsibilities:
 
 Conversation memory is current-session only. The app can resolve short follow-ups while the page remains open, but it does not persist long-term chat history.
 
-## 3. Runtime Service Wiring
+## 4. Runtime Service Wiring
 
 File:
 
@@ -94,7 +112,7 @@ LexicalReranker
 
 This avoids downloading large embedding or reranking models on Streamlit Community Cloud.
 
-## 4. Graph State
+## 5. Graph State
 
 File:
 
@@ -130,7 +148,7 @@ status
 
 This state is the contract between backend workflow and UI inspection. The Streamlit app uses it to render `Show workflow details`.
 
-## 5. Follow-Up Resolution
+## 6. Follow-Up Resolution
 
 Files:
 
@@ -175,7 +193,7 @@ How many active employees are in the Technology business unit?
 
 The graph then uses `resolved_question` for guardrail, retrieval, SQL generation, repair, and summary.
 
-## 6. Guardrail Node
+## 7. Guardrail Node
 
 File:
 
@@ -213,7 +231,7 @@ This protects the app from questions about:
 
 Provider errors during this step are surfaced as `API_ERROR` states instead of stack traces.
 
-## 7. RAG Pipeline: Schema Context Construction
+## 8. RAG Pipeline: Schema Context Construction
 
 RAG is used to decide which schema context the SQL generator should see. The goal is not to answer from retrieved text directly; the goal is to give the SQL generation node the right tables, columns, keys, and metric context.
 
@@ -435,7 +453,7 @@ In the UI, the user can inspect:
 - Reranker scores.
 - The generated SQL that used that context.
 
-## 8. SQL Generation Node
+## 9. SQL Generation Node
 
 Files:
 
@@ -472,7 +490,7 @@ In `Offline Demo`, `StubLLMService` uses deterministic rules for supported examp
 
 The generator is instructed to produce one safe DuckDB `SELECT` query, but the result is not trusted until validation passes.
 
-## 9. SQL Validation Node
+## 10. SQL Validation Node
 
 File:
 
@@ -508,7 +526,7 @@ error_message
 
 If validation passes, the graph continues to DuckDB execution. If validation fails, the graph routes to SQL repair unless the retry budget has been exhausted.
 
-## 10. DuckDB Execution Node
+## 11. DuckDB Execution Node
 
 File:
 
@@ -546,7 +564,7 @@ execution_time_ms
 
 If execution fails because of a database error, the graph routes to SQL repair unless the retry budget has been exhausted.
 
-## 11. SQL Repair Loop
+## 12. SQL Repair Loop
 
 Files:
 
@@ -596,7 +614,7 @@ retry_history
 
 This makes repair attempts visible in the UI.
 
-## 12. Summary Node
+## 13. Summary Node
 
 Files:
 
@@ -632,7 +650,7 @@ SummaryResult
 
 The final answer is a natural-language summary grounded in the executed database result. The UI renders this answer directly in the chat, with the SQL and intermediate workflow details kept below it.
 
-## 13. LLM Adapter Design
+## 14. LLM Adapter Design
 
 Files:
 
@@ -672,7 +690,7 @@ It extracts JSON, validates the response with Pydantic, and retries once for mal
 
 Provider errors are converted into workflow states such as `API_ERROR`, which keeps failures inspectable rather than crashing the UI.
 
-## 14. Data Layer
+## 15. Data Layer
 
 Synthetic data:
 
@@ -702,7 +720,7 @@ internal_moves
 
 The synthetic data is committed to the repository so Streamlit Community Cloud can start the app without running data generation during deployment.
 
-## 15. Deployment Architecture
+## 16. Deployment Architecture
 
 Deployment path:
 
@@ -738,7 +756,7 @@ LLM_BASE_URL = "<provider-base-url>"
 
 Root-level Streamlit secrets are exposed as environment variables at runtime, which the app reads through the settings/env loader.
 
-## 16. Testing Strategy
+## 17. Testing Strategy
 
 Tests live under:
 
@@ -767,7 +785,7 @@ Current status:
 
 GitHub Actions runs the test suite and preflight checks on pushes and pull requests to `main`.
 
-## 17. Design Tradeoffs
+## 18. Design Tradeoffs
 
 ### Streamlit Instead Of A Full Frontend Stack
 
@@ -804,7 +822,7 @@ Tradeoff:
 - Simple and transparent.
 - No long-term chat history or user-specific memory.
 
-## 18. Safety Boundaries
+## 19. Safety Boundaries
 
 Safety mechanisms:
 
@@ -826,7 +844,7 @@ Out of scope:
 - External facts such as weather, markets, or current events.
 - Production HR decision-making.
 
-## 19. Future Improvements
+## 20. Future Improvements
 
 Potential next steps:
 
@@ -839,7 +857,7 @@ Potential next steps:
 - Add chart generation for tabular results.
 - Add stronger prompt/version tracking.
 
-## 20. Quick Reviewer Path
+## 21. Quick Reviewer Path
 
 If you only have a few minutes:
 
