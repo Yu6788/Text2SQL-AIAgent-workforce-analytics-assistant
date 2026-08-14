@@ -718,6 +718,8 @@ employee_programs
 internal_moves
 ```
 
+For table grain, relationships, controlled values, business metrics, and data boundaries, see `DATA_GUIDE.md`.
+
 The synthetic data is committed to the repository so Streamlit Community Cloud can start the app without running data generation during deployment.
 
 ## 16. Deployment Architecture

@@ -541,6 +541,8 @@ Execution is read-only and result-capped for demo safety.
 
 The dataset is organized around employees, organizations, reviews, programs, enrollments, and moves.
 
+For a fuller explanation of table grain, relationships, controlled values, metrics, and data boundaries, see `DATA_GUIDE.md`.
+
 ```text
 organizations
      ^

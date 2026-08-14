@@ -23,6 +23,7 @@ Read these first:
 - `README.md`: project overview and quick start.
 - `DETAILED_INSTRUCTIONS.md`: product guide, demo script, and user exploration instructions.
 - `ENGINEERING_ARCHITECTURE.md`: engineering architecture for technical reviewers.
+- `DATA_GUIDE.md`: dataset explanation, table relationships, metric definitions, and question families.
 
 Historical planning notes and phase specs are retained in `docs/archive/`. Some archived files reference the synthetic company name `Atlas Workforce Solutions`; the current product-facing name is `Workforce Analytics Assistant`.
 
@@ -189,6 +190,7 @@ The synthetic DuckDB database, generated CSVs, and metadata are intentionally in
 |-- app.py
 |-- config.yaml
 |-- requirements.txt
+|-- DATA_GUIDE.md
 |-- data/
 |-- docs/archive/
 |-- metadata/
